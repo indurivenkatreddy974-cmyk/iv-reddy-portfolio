@@ -14,11 +14,11 @@ export const Route = createFileRoute("/sitemap.xml")({
   server: {
     handlers: {
       GET: async () => {
-        const today = new Date().toISOString().slice(0, 10);
         // Portfolio is a single-page site — all sections live under "/".
         // /atelier is admin (noindex) and intentionally excluded.
+        // No <lastmod>: there is no authoritative per-page content timestamp.
         const entries: SitemapEntry[] = [
-          { path: "/", lastmod: today, changefreq: "weekly", priority: "1.0" },
+          { path: "/", changefreq: "weekly", priority: "1.0" },
         ];
 
         const urls = entries.map((e) =>
