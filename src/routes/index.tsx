@@ -13,6 +13,7 @@ import { TechStackSection } from "@/components/TechStackSection";
 import { ContactSection, Footer } from "@/components/ContactSection";
 import { ChatOrb } from "@/components/chatbot/ChatOrb";
 import { FeaturedWorkSection } from "@/components/FeaturedWorkSection";
+import { DigitalOwnershipSection } from "@/components/blockchain/DigitalOwnershipSection";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -136,6 +137,8 @@ function Index() {
       <InternshipsSection />
       <EducationSection />
       <CertificationsSection />
+      <DigitalOwnershipSection />
+
       <TimelineSection />
       <TechStackSection />
       <ContactSection />
