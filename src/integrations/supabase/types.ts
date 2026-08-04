@@ -14,6 +14,123 @@ export type Database = {
   }
   public: {
     Tables: {
+      blockchain_records: {
+        Row: {
+          block_number: number | null
+          chain_id: number
+          contract_address: string | null
+          created_at: string
+          error_message: string | null
+          fallback_url: string | null
+          file_name: string | null
+          id: string
+          ipfs_cid: string | null
+          ipfs_url: string | null
+          metadata: Json
+          mime: string | null
+          network: string
+          registered_at: string | null
+          sha256: string
+          size_bytes: number | null
+          status: Database["public"]["Enums"]["verification_status"]
+          subject_ref: string | null
+          subject_type: Database["public"]["Enums"]["verification_subject"]
+          title: string
+          tx_hash: string | null
+          updated_at: string
+          wallet_address: string | null
+        }
+        Insert: {
+          block_number?: number | null
+          chain_id?: number
+          contract_address?: string | null
+          created_at?: string
+          error_message?: string | null
+          fallback_url?: string | null
+          file_name?: string | null
+          id?: string
+          ipfs_cid?: string | null
+          ipfs_url?: string | null
+          metadata?: Json
+          mime?: string | null
+          network?: string
+          registered_at?: string | null
+          sha256: string
+          size_bytes?: number | null
+          status?: Database["public"]["Enums"]["verification_status"]
+          subject_ref?: string | null
+          subject_type: Database["public"]["Enums"]["verification_subject"]
+          title: string
+          tx_hash?: string | null
+          updated_at?: string
+          wallet_address?: string | null
+        }
+        Update: {
+          block_number?: number | null
+          chain_id?: number
+          contract_address?: string | null
+          created_at?: string
+          error_message?: string | null
+          fallback_url?: string | null
+          file_name?: string | null
+          id?: string
+          ipfs_cid?: string | null
+          ipfs_url?: string | null
+          metadata?: Json
+          mime?: string | null
+          network?: string
+          registered_at?: string | null
+          sha256?: string
+          size_bytes?: number | null
+          status?: Database["public"]["Enums"]["verification_status"]
+          subject_ref?: string | null
+          subject_type?: Database["public"]["Enums"]["verification_subject"]
+          title?: string
+          tx_hash?: string | null
+          updated_at?: string
+          wallet_address?: string | null
+        }
+        Relationships: []
+      }
+      blockchain_settings: {
+        Row: {
+          chain_id: number
+          enabled: boolean
+          explorer_base: string
+          id: number
+          ipfs_gateway: string
+          network: string
+          nft_contract: string | null
+          updated_at: string
+          verification_contract: string | null
+          wallet_address: string | null
+        }
+        Insert: {
+          chain_id?: number
+          enabled?: boolean
+          explorer_base?: string
+          id?: number
+          ipfs_gateway?: string
+          network?: string
+          nft_contract?: string | null
+          updated_at?: string
+          verification_contract?: string | null
+          wallet_address?: string | null
+        }
+        Update: {
+          chain_id?: number
+          enabled?: boolean
+          explorer_base?: string
+          id?: number
+          ipfs_gateway?: string
+          network?: string
+          nft_contract?: string | null
+          updated_at?: string
+          verification_contract?: string | null
+          wallet_address?: string | null
+        }
+        Relationships: []
+      }
       media_assets: {
         Row: {
           created_at: string
@@ -59,6 +176,72 @@ export type Database = {
           storage_path?: string
           webp_url?: string | null
           width?: number | null
+        }
+        Relationships: []
+      }
+      nft_tokens: {
+        Row: {
+          artwork_url: string | null
+          chain_id: number
+          contract_address: string | null
+          created_at: string
+          description: string | null
+          error_message: string | null
+          featured: boolean
+          id: string
+          metadata_cid: string | null
+          mint_tx_hash: string | null
+          minted_at: string | null
+          network: string
+          owner_wallet: string | null
+          project_name: string
+          project_ref: string | null
+          sort_order: number
+          status: Database["public"]["Enums"]["verification_status"]
+          token_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          artwork_url?: string | null
+          chain_id?: number
+          contract_address?: string | null
+          created_at?: string
+          description?: string | null
+          error_message?: string | null
+          featured?: boolean
+          id?: string
+          metadata_cid?: string | null
+          mint_tx_hash?: string | null
+          minted_at?: string | null
+          network?: string
+          owner_wallet?: string | null
+          project_name: string
+          project_ref?: string | null
+          sort_order?: number
+          status?: Database["public"]["Enums"]["verification_status"]
+          token_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          artwork_url?: string | null
+          chain_id?: number
+          contract_address?: string | null
+          created_at?: string
+          description?: string | null
+          error_message?: string | null
+          featured?: boolean
+          id?: string
+          metadata_cid?: string | null
+          mint_tx_hash?: string | null
+          minted_at?: string | null
+          network?: string
+          owner_wallet?: string | null
+          project_name?: string
+          project_ref?: string | null
+          sort_order?: number
+          status?: Database["public"]["Enums"]["verification_status"]
+          token_id?: string | null
+          updated_at?: string
         }
         Relationships: []
       }
@@ -205,6 +388,15 @@ export type Database = {
       media_kind: "image" | "video" | "pdf" | "other"
       showcase_kind: "project" | "certification" | "achievement" | "video"
       showcase_layout: "grid" | "carousel" | "masonry" | "featured"
+      verification_status: "pending" | "confirmed" | "failed"
+      verification_subject:
+        | "resume"
+        | "certificate"
+        | "offer_letter"
+        | "completion_certificate"
+        | "project"
+        | "research_paper"
+        | "asset"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -336,6 +528,16 @@ export const Constants = {
       media_kind: ["image", "video", "pdf", "other"],
       showcase_kind: ["project", "certification", "achievement", "video"],
       showcase_layout: ["grid", "carousel", "masonry", "featured"],
+      verification_status: ["pending", "confirmed", "failed"],
+      verification_subject: [
+        "resume",
+        "certificate",
+        "offer_letter",
+        "completion_certificate",
+        "project",
+        "research_paper",
+        "asset",
+      ],
     },
   },
 } as const
