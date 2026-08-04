@@ -299,7 +299,7 @@ export async function verifyDigest(digest: string) {
         abi: VERIFICATION_ABI,
         functionName: "verify",
         args: [`0x${lower}` as Hex],
-      })) as [boolean, { timestamp: bigint; version: number; issuer: string; ipfsCid: string }];
+      })) as readonly [boolean, { timestamp: bigint; version: number; issuer: string; ipfsCid: string }];
       const [authentic, rec] = result;
       onChain = {
         authentic,
