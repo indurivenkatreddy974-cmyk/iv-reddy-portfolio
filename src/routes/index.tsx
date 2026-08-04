@@ -137,6 +137,8 @@ function Index() {
       <InternshipsSection />
       <EducationSection />
       <CertificationsSection />
+      <DigitalOwnershipSection />
+
       <TimelineSection />
       <TechStackSection />
       <ContactSection />
