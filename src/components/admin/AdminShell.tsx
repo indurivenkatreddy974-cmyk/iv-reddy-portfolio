@@ -20,8 +20,10 @@ import {
   Trash2,
   GripVertical,
   Sparkles,
+  Link2,
 } from "lucide-react";
 import { ShowcaseManager } from "./ShowcaseManager";
+import { BlockchainManager } from "./BlockchainManager";
 import {
   useContent,
   newId,
@@ -54,6 +56,7 @@ import { CSS } from "@dnd-kit/utilities";
 
 type TabKey =
   | "showcase"
+  | "blockchain"
   | "hero"
   | "about"
   | "projects"
@@ -68,6 +71,7 @@ type TabKey =
 
 const TABS: { key: TabKey; label: string; icon: typeof User }[] = [
   { key: "showcase", label: "Media & Showcase", icon: Sparkles },
+  { key: "blockchain", label: "Blockchain", icon: Link2 },
   { key: "hero", label: "Hero", icon: User },
   { key: "about", label: "About", icon: FileText },
   { key: "projects", label: "Projects", icon: FolderKanban },
@@ -213,6 +217,8 @@ function TabPanel({ tab }: { tab: TabKey }) {
   switch (tab) {
     case "showcase":
       return <ShowcaseManager />;
+    case "blockchain":
+      return <BlockchainManager />;
     case "hero":
       return <HeroEditor />;
     case "about":
