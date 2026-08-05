@@ -441,3 +441,29 @@ export async function walletStatus() {
 export function submissionKey(input: string) {
   return keccak256(toHex(input));
 }
+
+// ------------------------------------------------------------ auto anchoring
+
+/**
+ * Best-effort anchoring used by the admin upload pipeline. Never throws:
+ * uploads must succeed even when the chain is disabled, undeployed or busy.
+ */
+export async function autoAnchor(payload: RegisterDocumentPayload) {
+  const settings = await currentSettings();
+  if (!settings?.enabled) return { anchored: false as const, reason: "Blockchain layer is disabled." };
+  if (!settings.verification_contract) {
+    return { anchored: false as const, reason: "Verification contract is not deployed yet." };
+  }
+  try {
+    const result = await registerDocument(payload);
+    if ("duplicate" in result && result.duplicate) {
+      return { anchored: false as const, reason: result.message, duplicate: true as const };
+    }
+    return { anchored: true as const, ...result };
+  } catch (err) {
+    return {
+      anchored: false as const,
+      reason: err instanceof Error ? err.message : "Anchoring failed.",
+    };
+  }
+}
