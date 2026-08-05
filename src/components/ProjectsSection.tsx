@@ -4,15 +4,24 @@ import { useRef } from "react";
 import { FadeIn } from "./FadeIn";
 import { CtaButton } from "./CtaButton";
 import { useContent, type Project } from "@/lib/content-store";
+import { useState } from "react";
+import { VerifiedBadge } from "./blockchain/VerifiedBadge";
+import { VerificationDialog } from "./blockchain/VerificationDialog";
+import { useVerification, verificationRef } from "@/lib/blockchain/useVerification";
+import type { PublicRecord } from "@/lib/blockchain/chains";
 
 function ProjectCard({
   project,
+  record,
+  onProof,
   index,
   total,
   range,
   scrollYProgress,
 }: {
   project: Project;
+  record?: PublicRecord;
+  onProof: (record: PublicRecord) => void;
   index: number;
   total: number;
   range: [number, number];
@@ -63,6 +72,11 @@ function ProjectCard({
                 >
                   {project.name}
                 </h3>
+                {record && (
+                  <div className="mt-1">
+                    <VerifiedBadge record={record} onOpen={onProof} compact />
+                  </div>
+                )}
                 {project.tech.length > 0 && (
                   <div className="flex flex-wrap gap-2 mt-2">
                     {project.tech.map((t) => (
@@ -172,6 +186,8 @@ export function ProjectsSection() {
           <ProjectCard
             key={p.id}
             project={p}
+            record={byRef.get(verificationRef("project", p.id))}
+            onProof={setProof}
             index={i}
             total={projects.length}
             range={[start, end]}
@@ -179,6 +195,8 @@ export function ProjectsSection() {
           />
         );
       })}
+
+      <VerificationDialog record={proof} onClose={() => setProof(null)} />
     </section>
   );
 }
