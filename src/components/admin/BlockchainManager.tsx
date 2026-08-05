@@ -5,7 +5,6 @@ import { useServerFn } from "@tanstack/react-start";
 import {
   Loader2,
   Rocket,
-  Wallet,
   ShieldCheck,
   ShieldAlert,
   Trash2,
@@ -22,7 +21,7 @@ import {
   mintOwnershipToken,
   updateBlockchainSettings,
 } from "@/lib/blockchain.functions";
-import { useVerification, verificationRef } from "@/lib/blockchain/useVerification";
+import { verificationRef } from "@/lib/blockchain/useVerification";
 import {
   addressUrl,
   chainInfo,
@@ -560,6 +559,3 @@ function MintForm({
     </div>
   );
 }
-
-/** Kept for callers that only need the badge-facing hook. */
-export { useVerification, Wallet };
