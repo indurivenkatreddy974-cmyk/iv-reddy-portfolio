@@ -545,8 +545,8 @@ function MintForm({
           onMint({
             project_ref: verificationRef("project", selected.id),
             project_name: selected.name,
-            description: selected.description ?? undefined,
-            artwork_url: selected.imageUrl ?? undefined,
+            description: selected.desc || undefined,
+            artwork_url: selected.imgs?.[0] || undefined,
             sort_order: 0,
           });
         }}
