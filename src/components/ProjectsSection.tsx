@@ -158,6 +158,8 @@ function ProjectCard({
 export function ProjectsSection() {
   const projects = useContent((s) => s.projects);
   const containerRef = useRef<HTMLDivElement>(null);
+  const { byRef } = useVerification();
+  const [proof, setProof] = useState<PublicRecord | null>(null);
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start start", "end end"],
