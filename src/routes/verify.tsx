@@ -54,7 +54,7 @@ export const Route = createFileRoute("/verify")({
 });
 
 function VerifyPage() {
-  const { records } = Route.useLoaderData();
+  const { records } = Route.useLoaderData() as { records: PublicRecord[] };
   const [active, setActive] = useState<PublicRecord | null>(null);
   const confirmed = records.filter((r) => r.status === "confirmed");
 
