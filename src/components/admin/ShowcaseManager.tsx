@@ -32,6 +32,7 @@ import {
   registerMediaAsset,
   deleteMediaAsset,
 } from "@/lib/showcase.functions";
+import { autoAnchorUpload } from "@/lib/blockchain.functions";
 import { supabase } from "@/integrations/supabase/client";
 import {
   DndContext,
