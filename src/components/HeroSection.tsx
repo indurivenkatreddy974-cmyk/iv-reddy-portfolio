@@ -3,11 +3,19 @@ import { FadeIn } from "./FadeIn";
 import { Magnet } from "./Magnet";
 import { CtaButton } from "./CtaButton";
 import { useContent } from "@/lib/content-store";
+import { useState } from "react";
+import { VerifiedBadge } from "./blockchain/VerifiedBadge";
+import { VerificationDialog } from "./blockchain/VerificationDialog";
+import { useVerification, verificationRef } from "@/lib/blockchain/useVerification";
+import type { PublicRecord } from "@/lib/blockchain/chains";
 
 export function HeroSection() {
   const hero = useContent((s) => s.hero);
   const media = useContent((s) => s.media);
   const portrait = media.profilePhoto || hero.portraitUrl;
+  const { byRef } = useVerification();
+  const resumeRecord = byRef.get(verificationRef("resume", "main"));
+  const [proof, setProof] = useState<PublicRecord | null>(null);
 
   return (
     <section
@@ -75,9 +83,11 @@ export function HeroSection() {
             <CtaButton href={hero.cta1.href} size="sm">{hero.cta1.label}</CtaButton>
             <CtaButton href={hero.cta2.href} variant="ghost" size="sm">{hero.cta2.label}</CtaButton>
             <CtaButton href={media.resumeUrl || hero.cta3.href} variant="ghost" size="sm">{hero.cta3.label}</CtaButton>
+            <VerifiedBadge record={resumeRecord} onOpen={setProof} />
           </div>
         </FadeIn>
       </div>
+      <VerificationDialog record={proof} onClose={() => setProof(null)} />
     </section>
   );
 }

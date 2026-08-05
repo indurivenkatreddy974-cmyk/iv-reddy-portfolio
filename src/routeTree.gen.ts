@@ -9,12 +9,19 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as VerifyRouteImport } from './routes/verify'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
 import { Route as AtelierRouteImport } from './routes/atelier'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiPublicMSplatRouteImport } from './routes/api/public/m/$'
+import { Route as ApiPublicCredentialIdRouteImport } from './routes/api/public/credential/$id'
 
+const VerifyRoute = VerifyRouteImport.update({
+  id: '/verify',
+  path: '/verify',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
@@ -40,12 +47,19 @@ const ApiPublicMSplatRoute = ApiPublicMSplatRouteImport.update({
   path: '/api/public/m/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicCredentialIdRoute = ApiPublicCredentialIdRouteImport.update({
+  id: '/api/public/credential/$id',
+  path: '/api/public/credential/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/atelier': typeof AtelierRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/verify': typeof VerifyRoute
+  '/api/public/credential/$id': typeof ApiPublicCredentialIdRoute
   '/api/public/m/$': typeof ApiPublicMSplatRoute
 }
 export interface FileRoutesByTo {
@@ -53,6 +67,8 @@ export interface FileRoutesByTo {
   '/atelier': typeof AtelierRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/verify': typeof VerifyRoute
+  '/api/public/credential/$id': typeof ApiPublicCredentialIdRoute
   '/api/public/m/$': typeof ApiPublicMSplatRoute
 }
 export interface FileRoutesById {
@@ -61,6 +77,8 @@ export interface FileRoutesById {
   '/atelier': typeof AtelierRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/verify': typeof VerifyRoute
+  '/api/public/credential/$id': typeof ApiPublicCredentialIdRoute
   '/api/public/m/$': typeof ApiPublicMSplatRoute
 }
 export interface FileRouteTypes {
@@ -70,15 +88,26 @@ export interface FileRouteTypes {
     | '/atelier'
     | '/robots.txt'
     | '/sitemap.xml'
+    | '/verify'
+    | '/api/public/credential/$id'
     | '/api/public/m/$'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/atelier' | '/robots.txt' | '/sitemap.xml' | '/api/public/m/$'
+  to:
+    | '/'
+    | '/atelier'
+    | '/robots.txt'
+    | '/sitemap.xml'
+    | '/verify'
+    | '/api/public/credential/$id'
+    | '/api/public/m/$'
   id:
     | '__root__'
     | '/'
     | '/atelier'
     | '/robots.txt'
     | '/sitemap.xml'
+    | '/verify'
+    | '/api/public/credential/$id'
     | '/api/public/m/$'
   fileRoutesById: FileRoutesById
 }
@@ -87,11 +116,20 @@ export interface RootRouteChildren {
   AtelierRoute: typeof AtelierRoute
   RobotsDottxtRoute: typeof RobotsDottxtRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  VerifyRoute: typeof VerifyRoute
+  ApiPublicCredentialIdRoute: typeof ApiPublicCredentialIdRoute
   ApiPublicMSplatRoute: typeof ApiPublicMSplatRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/verify': {
+      id: '/verify'
+      path: '/verify'
+      fullPath: '/verify'
+      preLoaderRoute: typeof VerifyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/sitemap.xml': {
       id: '/sitemap.xml'
       path: '/sitemap.xml'
@@ -127,6 +165,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicMSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/credential/$id': {
+      id: '/api/public/credential/$id'
+      path: '/api/public/credential/$id'
+      fullPath: '/api/public/credential/$id'
+      preLoaderRoute: typeof ApiPublicCredentialIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -135,6 +180,8 @@ const rootRouteChildren: RootRouteChildren = {
   AtelierRoute: AtelierRoute,
   RobotsDottxtRoute: RobotsDottxtRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  VerifyRoute: VerifyRoute,
+  ApiPublicCredentialIdRoute: ApiPublicCredentialIdRoute,
   ApiPublicMSplatRoute: ApiPublicMSplatRoute,
 }
 export const routeTree = rootRouteImport

@@ -32,6 +32,7 @@ import {
   registerMediaAsset,
   deleteMediaAsset,
 } from "@/lib/showcase.functions";
+import { autoAnchorUpload } from "@/lib/blockchain.functions";
 import { supabase } from "@/integrations/supabase/client";
 import {
   DndContext,
@@ -858,6 +859,7 @@ type UploadJob = {
 
 function UploadDropzone({ onUploaded }: { onUploaded: () => void }) {
   const sign = useServerFn(signMediaUpload);
+  const anchor = useServerFn(autoAnchorUpload);
   const register = useServerFn(registerMediaAsset);
   const [jobs, setJobs] = useState<UploadJob[]>([]);
 
@@ -941,13 +943,29 @@ function UploadDropzone({ onUploaded }: { onUploaded: () => void }) {
           },
         });
         update({ progress: 100, status: "done" });
+
+        // Automatic on-chain anchoring for document uploads. Best effort:
+        // the server returns { anchored: false } when the chain layer is off.
+        if (kind === "pdf" || kind === "other") {
+          void anchor({
+            data: {
+              subject_type: "asset",
+              subject_ref: `media:${signed.path}`,
+              title: file.name,
+              file_name: file.name,
+              source_url: `/api/public/m/${signed.path}`,
+              mime: processed.type || file.type,
+            },
+          }).catch(() => undefined);
+        }
+
         onUploaded();
         setTimeout(() => setJobs((js) => js.filter((j) => j.id !== jobId)), 1500);
       } catch (e) {
         update({ status: "error", error: e instanceof Error ? e.message : "Failed" });
       }
     },
-    [sign, register, onUploaded],
+    [sign, register, anchor, onUploaded],
   );
 
   const onDrop = useCallback(

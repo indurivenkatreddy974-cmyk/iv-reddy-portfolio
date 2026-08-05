@@ -5,10 +5,16 @@ import { useContent, type Internship } from "@/lib/content-store";
 import { Building2, FileSignature, Eye, Download } from "lucide-react";
 import { PdfPreviewModal } from "./PdfPreviewModal";
 import { normalizeUrl, triggerDocumentDownload } from "@/lib/document-utils";
+import { VerifiedBadge } from "./blockchain/VerifiedBadge";
+import { VerificationDialog } from "./blockchain/VerificationDialog";
+import { useVerification, verificationRef } from "@/lib/blockchain/useVerification";
+import type { PublicRecord } from "@/lib/blockchain/chains";
 
 export function InternshipsSection() {
   const internships = useContent((s) => s.internships);
   const [preview, setPreview] = useState<{ url: string; title: string } | null>(null);
+  const [proof, setProof] = useState<PublicRecord | null>(null);
+  const { byRef } = useVerification();
 
   return (
     <section id="internships" className="px-5 sm:px-8 md:px-10 py-24 sm:py-32 relative" style={{ background: "#0C0C0C" }}>
@@ -30,7 +36,13 @@ export function InternshipsSection() {
       <div className={`grid gap-6 md:gap-8 max-w-6xl mx-auto ${internships.length === 1 ? "grid-cols-1" : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3"}`}>
         {internships.map((item, i) => (
           <FadeIn key={item.id} delay={i * 0.15} y={40}>
-            <InternshipCard item={item} onPreview={(url, title) => setPreview({ url, title })} />
+            <InternshipCard
+              item={item}
+              certRecord={byRef.get(verificationRef("internship", item.id, "certificate"))}
+              offerRecord={byRef.get(verificationRef("internship", item.id, "offer"))}
+              onProof={setProof}
+              onPreview={(url, title) => setPreview({ url, title })}
+            />
           </FadeIn>
         ))}
       </div>
@@ -41,15 +53,22 @@ export function InternshipsSection() {
         title={preview?.title}
         onClose={() => setPreview(null)}
       />
+      <VerificationDialog record={proof} onClose={() => setProof(null)} />
     </section>
   );
 }
 
 function InternshipCard({
   item,
+  certRecord,
+  offerRecord,
+  onProof,
   onPreview,
 }: {
   item: Internship;
+  certRecord?: PublicRecord;
+  offerRecord?: PublicRecord;
+  onProof: (record: PublicRecord) => void;
   onPreview: (url: string, title: string) => void;
 }) {
   const skills = item.skills ?? [];
@@ -81,6 +100,13 @@ function InternshipCard({
       <div className="text-sm uppercase tracking-widest" style={{ color: "#7621B0" }}>
         {item.role}
       </div>
+
+      {(certRecord || offerRecord) && (
+        <div className="flex flex-wrap gap-2">
+          <VerifiedBadge record={certRecord} onOpen={onProof} compact />
+          <VerifiedBadge record={offerRecord} onOpen={onProof} compact />
+        </div>
+      )}
 
       <p className="text-[#D7E2EA]/65 font-light leading-relaxed text-sm md:text-base">
         {item.contributions}

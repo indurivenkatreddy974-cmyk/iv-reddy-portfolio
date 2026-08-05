@@ -5,6 +5,10 @@ import { FadeIn } from "./FadeIn";
 import { useContent, type Certification } from "@/lib/content-store";
 import { Award, Download, Eye, ExternalLink, FileText } from "lucide-react";
 import { PdfPreviewModal } from "./PdfPreviewModal";
+import { VerifiedBadge } from "./blockchain/VerifiedBadge";
+import { VerificationDialog } from "./blockchain/VerificationDialog";
+import { useVerification, verificationRef } from "@/lib/blockchain/useVerification";
+import type { PublicRecord } from "@/lib/blockchain/chains";
 
 const PdfThumbnail = lazy(() => import("./PdfThumbnail"));
 import {
@@ -18,6 +22,8 @@ import {
 export function CertificationsSection() {
   const items = useContent((s) => s.certifications);
   const [preview, setPreview] = useState<{ url: string; title: string } | null>(null);
+  const [proof, setProof] = useState<PublicRecord | null>(null);
+  const { byRef } = useVerification();
 
   if (!items || items.length === 0) return null;
 
@@ -41,7 +47,12 @@ export function CertificationsSection() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 max-w-6xl mx-auto">
         {items.map((c, i) => (
           <FadeIn key={c.id} delay={i * 0.1} y={40}>
-            <CertCard cert={c} onPreview={(url, title) => setPreview({ url, title })} />
+            <CertCard
+              cert={c}
+              record={byRef.get(verificationRef("certificate", c.id))}
+              onProof={setProof}
+              onPreview={(url, title) => setPreview({ url, title })}
+            />
           </FadeIn>
         ))}
       </div>
@@ -52,15 +63,20 @@ export function CertificationsSection() {
         title={preview?.title}
         onClose={() => setPreview(null)}
       />
+      <VerificationDialog record={proof} onClose={() => setProof(null)} />
     </section>
   );
 }
 
 function CertCard({
   cert,
+  record,
+  onProof,
   onPreview,
 }: {
   cert: Certification;
+  record?: PublicRecord;
+  onProof: (record: PublicRecord) => void;
   onPreview: (url: string, title: string) => void;
 }) {
   const documentUrl = normalizeUrl(cert.pdfUrl);
@@ -169,6 +185,11 @@ function CertCard({
           {cert.name}
         </h3>
         <div className="text-xs text-[#D7E2EA]/50">Issued {cert.issueDate}</div>
+        {record && (
+          <div onClick={(e) => e.stopPropagation()}>
+            <VerifiedBadge record={record} onOpen={onProof} compact />
+          </div>
+        )}
 
         <div className="flex items-center gap-2 mt-auto pt-3" onClick={(e) => e.stopPropagation()}>
           {documentUrl && (

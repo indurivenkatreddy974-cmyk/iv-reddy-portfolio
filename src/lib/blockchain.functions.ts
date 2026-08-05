@@ -89,3 +89,12 @@ export const updateBlockchainSettings = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true };
   });
+
+export const autoAnchorUpload = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => RegisterDocumentInput.parse(input))
+  .handler(async ({ data, context }) => {
+    const { assertAdmin, autoAnchor } = await import("@/lib/blockchain/registry.server");
+    await assertAdmin(context.userId);
+    return autoAnchor(data);
+  });
