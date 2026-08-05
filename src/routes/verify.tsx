@@ -1,5 +1,4 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { createServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { ShieldCheck, ArrowLeft, FileJson } from "lucide-react";
@@ -15,14 +14,15 @@ import { VerificationDialog } from "@/components/blockchain/VerificationDialog";
 import { VerifiedBadge } from "@/components/blockchain/VerifiedBadge";
 import { WalletConnect } from "@/components/blockchain/WalletConnect";
 
-const loadRecords = createServerFn({ method: "GET" }).handler(async () => {
+async function loadRecords(): Promise<{ records: PublicRecord[] }> {
   try {
     const state = await getVerificationState();
     return { records: (state.records ?? []) as unknown as PublicRecord[] };
   } catch {
     return { records: [] as PublicRecord[] };
   }
-});
+}
+
 
 const TITLE = "Blockchain Verified Credentials — IV Reddy";
 const DESCRIPTION =
