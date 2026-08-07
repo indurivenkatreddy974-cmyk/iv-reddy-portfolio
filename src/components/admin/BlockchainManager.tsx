@@ -549,6 +549,28 @@ export function BlockchainManager() {
                   )}
                   <button
                     type="button"
+                    aria-label={`Re-verify ${r.title} against the blockchain`}
+                    onClick={() =>
+                      run(
+                        `re-${r.id}`,
+                        async () => {
+                          const res = await revalidate({ data: { id: r.id } });
+                          if (!res.authentic) throw new Error(`"${r.title}" no longer matches its on-chain fingerprint.`);
+                        },
+                        `"${r.title}" is authentic — hash matches the chain.`,
+                      )
+                    }
+                    className="p-2 rounded-full border border-[#D7E2EA]/15 text-[#D7E2EA]/70 hover:text-white transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4a9eff]"
+                  >
+                    {busy === `re-${r.id}` ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" aria-hidden="true" />
+                    ) : (
+                      <RefreshCw className="w-3.5 h-3.5" aria-hidden="true" />
+                    )}
+                  </button>
+
+                  <button
+                    type="button"
                     aria-label={`Delete record ${r.title}`}
                     onClick={() => run(`del-${r.id}`, () => removeRecord({ data: { id: r.id } }), "Record removed.")}
                     className="p-2 rounded-full border border-rose-400/25 text-rose-300 hover:bg-rose-500/10 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400"
