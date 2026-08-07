@@ -148,31 +148,73 @@ export function BlockchainManager() {
     return out;
   }, [content]);
 
-  const pending = tasks.filter((t) => !anchoredRefs.has(t.subject_ref));
+  const plan = useQuery({
+    queryKey: ["blockchain", "migration-plan", tasks.map((t) => t.subject_ref).join("|")],
+    queryFn: () => buildPlan({ data: { targets: tasks } }),
+    retry: false,
+  });
+  const health = useQuery({
+    queryKey: ["blockchain", "diagnostics"],
+    queryFn: () => diagnose(),
+    retry: false,
+    refetchInterval: 60_000,
+  });
 
-  const anchorTask = (task: AnchorTask) =>
-    run(
-      task.key,
-      () =>
-        anchor({
+  const planItems = (plan.data?.items ?? []) as PlanItem[];
+  const planTotals = plan.data?.totals ?? { total: 0, verified: 0, pending: 0, failed: 0 };
+  const migratable = planItems.filter((i) => i.status !== "verified");
+
+  /** Batched, resumable migration loop with live progress + per-item results. */
+  const runMigration = async (items: PlanItem[]) => {
+    if (items.length === 0) return;
+    const key = items.length === 1 ? `one-${items[0]!.key}` : items.some((i) => i.status === "failed") && items.length === planTotals.failed ? "migrate-failed" : "migrate";
+    setBusy(key);
+    setMessage(null);
+    setProgress({ done: 0, total: items.length, current: items[0]!.label });
+
+    let ok = 0;
+    let failed = 0;
+    for (let i = 0; i < items.length; i += 2) {
+      const slice = items.slice(i, i + 2);
+      setProgress({ done: i, total: items.length, current: slice.map((s) => s.label).join(", ") });
+      try {
+        const batch = await migrate({
           data: {
-            subject_type: task.subject_type,
-            subject_ref: task.subject_ref,
-            title: task.label,
-            source_url: task.source_url,
+            targets: slice.map((t) => ({
+              key: t.key,
+              label: t.label,
+              subject_type: t.subject_type,
+              subject_ref: t.subject_ref,
+              source_url: t.source_url,
+            })),
           },
-        }),
-      `Anchored "${task.label}" on-chain.`,
-    );
+        });
+        setResults((prev) => {
+          const next = { ...prev };
+          for (const r of batch) next[r.subject_ref] = { ok: r.ok, message: r.message };
+          return next;
+        });
+        for (const r of batch) (r.ok ? ok++ : failed++);
+      } catch (err) {
+        failed += slice.length;
+        const text = err instanceof Error ? err.message : "Batch failed.";
+        setResults((prev) => {
+          const next = { ...prev };
+          for (const s of slice) next[s.subject_ref] = { ok: false, message: text };
+          return next;
+        });
+      }
+    }
 
-  const anchorAll = () =>
-    run(
-      "anchor-all",
-      async () => {
-        for (const t of pending) await anchor({ data: { subject_type: t.subject_type, subject_ref: t.subject_ref, title: t.label, source_url: t.source_url } });
-      },
-      `Anchored ${pending.length} document${pending.length === 1 ? "" : "s"}.`,
-    );
+    setProgress({ done: items.length, total: items.length, current: "Finished." });
+    setBusy(null);
+    setMessage({
+      tone: failed === 0 ? "ok" : "err",
+      text: `Migration finished — ${ok} verified${failed ? `, ${failed} failed (retryable)` : ""}.`,
+    });
+    refresh();
+  };
+
 
   const info = chainInfo(settings?.chain_id ?? wallet.data?.chain_id);
 
