@@ -44,6 +44,26 @@ export const VerifyInput = z.object({
 
 export const IdInput = z.object({ id: z.string().uuid() });
 
+export const MigrationTargetSchema = z.object({
+  key: z.string().min(1).max(200),
+  label: z.string().min(1).max(300),
+  subject_type: SubjectType,
+  subject_ref: z.string().min(1).max(200),
+  source_url: z.string().min(1).max(2000),
+});
+
+export const MigrationPlanInput = z.object({
+  targets: z.array(MigrationTargetSchema).max(5000).default([]),
+});
+
+export const MigrationBatchInput = z.object({
+  targets: z.array(MigrationTargetSchema).min(1).max(10),
+});
+
+export const PauseInput = z.object({ paused: z.boolean() });
+
+export type MigrationTarget = z.infer<typeof MigrationTargetSchema>;
+
 export const SettingsInput = z.object({
   enabled: z.boolean().optional(),
   ipfs_gateway: z.string().url().max(300).optional(),
