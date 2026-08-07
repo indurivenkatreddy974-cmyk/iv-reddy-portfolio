@@ -217,7 +217,10 @@ export function BlockchainManager() {
           for (const r of batch) next[r.subject_ref] = { ok: r.ok, message: r.message };
           return next;
         });
-        for (const r of batch) r.ok ? ok++ : failed++;
+        for (const r of batch) {
+          if (r.ok) ok++;
+          else failed++;
+        }
       } catch (err) {
         failed += slice.length;
         const text = err instanceof Error ? err.message : "Batch failed.";
