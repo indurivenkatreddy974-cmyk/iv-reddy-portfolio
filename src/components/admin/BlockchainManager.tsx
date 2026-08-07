@@ -14,7 +14,6 @@ import {
   RefreshCw,
 } from "lucide-react";
 import {
-  anchorDocument,
   deleteVerificationRecord,
   deployVerificationContracts,
   getSystemDiagnostics,
