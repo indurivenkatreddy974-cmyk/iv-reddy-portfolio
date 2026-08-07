@@ -67,7 +67,7 @@ export function BlockchainManager() {
   const [results, setResults] = useState<Record<string, { ok: boolean; message: string }>>({});
 
   const deploy = useServerFn(deployVerificationContracts);
-  const anchor = useServerFn(anchorDocument);
+  
   const mint = useServerFn(mintOwnershipToken);
   const removeRecord = useServerFn(deleteVerificationRecord);
   const saveSettings = useServerFn(updateBlockchainSettings);
