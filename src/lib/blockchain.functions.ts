@@ -101,3 +101,54 @@ export const autoAnchorUpload = createServerFn({ method: "POST" })
     await assertAdmin(context.userId);
     return autoAnchor(data);
   });
+
+// ------------------------------------------------------------ migration ops
+
+export const planExistingMigration = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => MigrationPlanInput.parse(input))
+  .handler(async ({ data, context }) => {
+    const { assertAdmin } = await import("@/lib/blockchain/registry.server");
+    await assertAdmin(context.userId);
+    const { planMigration } = await import("@/lib/blockchain/migration.server");
+    return planMigration(data.targets);
+  });
+
+export const runMigrationBatch = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => MigrationBatchInput.parse(input))
+  .handler(async ({ data, context }) => {
+    const { assertAdmin } = await import("@/lib/blockchain/registry.server");
+    await assertAdmin(context.userId);
+    const { migrateBatch } = await import("@/lib/blockchain/migration.server");
+    return migrateBatch(data.targets);
+  });
+
+export const revalidateVerificationRecord = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => IdInput.parse(input))
+  .handler(async ({ data, context }) => {
+    const { assertAdmin } = await import("@/lib/blockchain/registry.server");
+    await assertAdmin(context.userId);
+    const { revalidateRecord } = await import("@/lib/blockchain/migration.server");
+    return revalidateRecord(data.id);
+  });
+
+export const getSystemDiagnostics = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { assertAdmin } = await import("@/lib/blockchain/registry.server");
+    await assertAdmin(context.userId);
+    const { diagnostics } = await import("@/lib/blockchain/migration.server");
+    return diagnostics();
+  });
+
+export const setVerificationPaused = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => PauseInput.parse(input))
+  .handler(async ({ data, context }) => {
+    const { assertAdmin } = await import("@/lib/blockchain/registry.server");
+    await assertAdmin(context.userId);
+    const { setContractPaused } = await import("@/lib/blockchain/migration.server");
+    return setContractPaused(data.paused);
+  });
