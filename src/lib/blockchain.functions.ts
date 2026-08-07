@@ -2,7 +2,10 @@ import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import {
   IdInput,
+  MigrationBatchInput,
+  MigrationPlanInput,
   MintTokenInput,
+  PauseInput,
   RegisterDocumentInput,
   SettingsInput,
   VerifyInput,
