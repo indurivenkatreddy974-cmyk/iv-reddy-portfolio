@@ -11,14 +11,20 @@ import {
   ExternalLink,
   Anchor,
   Gem,
+  RefreshCw,
 } from "lucide-react";
 import {
   anchorDocument,
   deleteVerificationRecord,
   deployVerificationContracts,
+  getSystemDiagnostics,
   getVerificationState,
   getWalletStatus,
   mintOwnershipToken,
+  planExistingMigration,
+  revalidateVerificationRecord,
+  runMigrationBatch,
+  setVerificationPaused,
   updateBlockchainSettings,
 } from "@/lib/blockchain.functions";
 import { verificationRef } from "@/lib/blockchain/useVerification";
@@ -45,10 +51,20 @@ type AnchorTask = {
   source_url: string;
 };
 
+type PlanItem = AnchorTask & {
+  status: "verified" | "pending" | "failed" | "processing";
+  record_id: string | null;
+  tx_hash: string | null;
+  error: string | null;
+  retry_count: number;
+};
+
 export function BlockchainManager() {
   const qc = useQueryClient();
   const [busy, setBusy] = useState<string | null>(null);
   const [message, setMessage] = useState<{ tone: "ok" | "err"; text: string } | null>(null);
+  const [progress, setProgress] = useState<{ done: number; total: number; current: string } | null>(null);
+  const [results, setResults] = useState<Record<string, { ok: boolean; message: string }>>({});
 
   const deploy = useServerFn(deployVerificationContracts);
   const anchor = useServerFn(anchorDocument);
@@ -57,6 +73,12 @@ export function BlockchainManager() {
   const saveSettings = useServerFn(updateBlockchainSettings);
   const readState = useServerFn(getVerificationState);
   const readWallet = useServerFn(getWalletStatus);
+  const buildPlan = useServerFn(planExistingMigration);
+  const migrate = useServerFn(runMigrationBatch);
+  const diagnose = useServerFn(getSystemDiagnostics);
+  const pauseContract = useServerFn(setVerificationPaused);
+  const revalidate = useServerFn(revalidateVerificationRecord);
+
 
   const state = useQuery({
     queryKey: ["blockchain", "admin-state"],
