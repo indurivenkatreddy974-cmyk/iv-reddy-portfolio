@@ -117,10 +117,7 @@ export function BlockchainManager() {
 
   // ---- portfolio documents that can be anchored -------------------------
   const content = useContent();
-  const anchoredRefs = useMemo(
-    () => new Set(records.filter((r) => r.status !== "failed").map((r) => r.subject_ref ?? "")),
-    [records],
-  );
+
 
   const tasks = useMemo<AnchorTask[]>(() => {
     const out: AnchorTask[] = [];
