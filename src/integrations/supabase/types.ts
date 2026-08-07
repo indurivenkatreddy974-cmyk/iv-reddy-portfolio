@@ -26,10 +26,13 @@ export type Database = {
           id: string
           ipfs_cid: string | null
           ipfs_url: string | null
+          last_check_result: string | null
+          last_checked_at: string | null
           metadata: Json
           mime: string | null
           network: string
           registered_at: string | null
+          retry_count: number
           sha256: string
           size_bytes: number | null
           status: Database["public"]["Enums"]["verification_status"]
@@ -51,10 +54,13 @@ export type Database = {
           id?: string
           ipfs_cid?: string | null
           ipfs_url?: string | null
+          last_check_result?: string | null
+          last_checked_at?: string | null
           metadata?: Json
           mime?: string | null
           network?: string
           registered_at?: string | null
+          retry_count?: number
           sha256: string
           size_bytes?: number | null
           status?: Database["public"]["Enums"]["verification_status"]
@@ -76,10 +82,13 @@ export type Database = {
           id?: string
           ipfs_cid?: string | null
           ipfs_url?: string | null
+          last_check_result?: string | null
+          last_checked_at?: string | null
           metadata?: Json
           mime?: string | null
           network?: string
           registered_at?: string | null
+          retry_count?: number
           sha256?: string
           size_bytes?: number | null
           status?: Database["public"]["Enums"]["verification_status"]

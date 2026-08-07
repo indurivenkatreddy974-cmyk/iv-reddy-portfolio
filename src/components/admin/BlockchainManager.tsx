@@ -11,14 +11,19 @@ import {
   ExternalLink,
   Anchor,
   Gem,
+  RefreshCw,
 } from "lucide-react";
 import {
-  anchorDocument,
   deleteVerificationRecord,
   deployVerificationContracts,
+  getSystemDiagnostics,
   getVerificationState,
   getWalletStatus,
   mintOwnershipToken,
+  planExistingMigration,
+  revalidateVerificationRecord,
+  runMigrationBatch,
+  setVerificationPaused,
   updateBlockchainSettings,
 } from "@/lib/blockchain.functions";
 import { verificationRef } from "@/lib/blockchain/useVerification";
@@ -45,18 +50,35 @@ type AnchorTask = {
   source_url: string;
 };
 
+type PlanItem = AnchorTask & {
+  status: "verified" | "pending" | "failed" | "processing";
+  record_id: string | null;
+  tx_hash: string | null;
+  error: string | null;
+  retry_count: number;
+};
+
 export function BlockchainManager() {
   const qc = useQueryClient();
   const [busy, setBusy] = useState<string | null>(null);
   const [message, setMessage] = useState<{ tone: "ok" | "err"; text: string } | null>(null);
+  const [progress, setProgress] = useState<{ done: number; total: number; current: string } | null>(
+    null,
+  );
+  const [results, setResults] = useState<Record<string, { ok: boolean; message: string }>>({});
 
   const deploy = useServerFn(deployVerificationContracts);
-  const anchor = useServerFn(anchorDocument);
+
   const mint = useServerFn(mintOwnershipToken);
   const removeRecord = useServerFn(deleteVerificationRecord);
   const saveSettings = useServerFn(updateBlockchainSettings);
   const readState = useServerFn(getVerificationState);
   const readWallet = useServerFn(getWalletStatus);
+  const buildPlan = useServerFn(planExistingMigration);
+  const migrate = useServerFn(runMigrationBatch);
+  const diagnose = useServerFn(getSystemDiagnostics);
+  const pauseContract = useServerFn(setVerificationPaused);
+  const revalidate = useServerFn(revalidateVerificationRecord);
 
   const state = useQuery({
     queryKey: ["blockchain", "admin-state"],
@@ -95,10 +117,6 @@ export function BlockchainManager() {
 
   // ---- portfolio documents that can be anchored -------------------------
   const content = useContent();
-  const anchoredRefs = useMemo(
-    () => new Set(records.filter((r) => r.status !== "failed").map((r) => r.subject_ref ?? "")),
-    [records],
-  );
 
   const tasks = useMemo<AnchorTask[]>(() => {
     const out: AnchorTask[] = [];
@@ -148,31 +166,80 @@ export function BlockchainManager() {
     return out;
   }, [content]);
 
-  const pending = tasks.filter((t) => !anchoredRefs.has(t.subject_ref));
+  const plan = useQuery({
+    queryKey: ["blockchain", "migration-plan", tasks.map((t) => t.subject_ref).join("|")],
+    queryFn: () => buildPlan({ data: { targets: tasks } }),
+    retry: false,
+  });
+  const health = useQuery({
+    queryKey: ["blockchain", "diagnostics"],
+    queryFn: () => diagnose(),
+    retry: false,
+    refetchInterval: 60_000,
+  });
 
-  const anchorTask = (task: AnchorTask) =>
-    run(
-      task.key,
-      () =>
-        anchor({
+  const planItems = (plan.data?.items ?? []) as PlanItem[];
+  const planTotals = plan.data?.totals ?? { total: 0, verified: 0, pending: 0, failed: 0 };
+  const migratable = planItems.filter((i) => i.status !== "verified");
+
+  /** Batched, resumable migration loop with live progress + per-item results. */
+  const runMigration = async (items: PlanItem[]) => {
+    if (items.length === 0) return;
+    const key =
+      items.length === 1
+        ? `one-${items[0]!.key}`
+        : items.some((i) => i.status === "failed") && items.length === planTotals.failed
+          ? "migrate-failed"
+          : "migrate";
+    setBusy(key);
+    setMessage(null);
+    setProgress({ done: 0, total: items.length, current: items[0]!.label });
+
+    let ok = 0;
+    let failed = 0;
+    for (let i = 0; i < items.length; i += 2) {
+      const slice = items.slice(i, i + 2);
+      setProgress({ done: i, total: items.length, current: slice.map((s) => s.label).join(", ") });
+      try {
+        const batch = await migrate({
           data: {
-            subject_type: task.subject_type,
-            subject_ref: task.subject_ref,
-            title: task.label,
-            source_url: task.source_url,
+            targets: slice.map((t) => ({
+              key: t.key,
+              label: t.label,
+              subject_type: t.subject_type,
+              subject_ref: t.subject_ref,
+              source_url: t.source_url,
+            })),
           },
-        }),
-      `Anchored "${task.label}" on-chain.`,
-    );
+        });
+        setResults((prev) => {
+          const next = { ...prev };
+          for (const r of batch) next[r.subject_ref] = { ok: r.ok, message: r.message };
+          return next;
+        });
+        for (const r of batch) {
+          if (r.ok) ok++;
+          else failed++;
+        }
+      } catch (err) {
+        failed += slice.length;
+        const text = err instanceof Error ? err.message : "Batch failed.";
+        setResults((prev) => {
+          const next = { ...prev };
+          for (const s of slice) next[s.subject_ref] = { ok: false, message: text };
+          return next;
+        });
+      }
+    }
 
-  const anchorAll = () =>
-    run(
-      "anchor-all",
-      async () => {
-        for (const t of pending) await anchor({ data: { subject_type: t.subject_type, subject_ref: t.subject_ref, title: t.label, source_url: t.source_url } });
-      },
-      `Anchored ${pending.length} document${pending.length === 1 ? "" : "s"}.`,
-    );
+    setProgress({ done: items.length, total: items.length, current: "Finished." });
+    setBusy(null);
+    setMessage({
+      tone: failed === 0 ? "ok" : "err",
+      text: `Migration finished — ${ok} verified${failed ? `, ${failed} failed (retryable)` : ""}.`,
+    });
+    refresh();
+  };
 
   const info = chainInfo(settings?.chain_id ?? wallet.data?.chain_id);
 
@@ -202,21 +269,35 @@ export function BlockchainManager() {
           />
           <Stat
             label="Verification contract"
-            value={settings?.verification_contract ? shortHash(settings.verification_contract, 10, 8) : "Not deployed"}
-            href={settings?.verification_contract ? addressUrl(info.chainId, settings.verification_contract) : undefined}
+            value={
+              settings?.verification_contract
+                ? shortHash(settings.verification_contract, 10, 8)
+                : "Not deployed"
+            }
+            href={
+              settings?.verification_contract
+                ? addressUrl(info.chainId, settings.verification_contract)
+                : undefined
+            }
             tone={settings?.verification_contract ? "ok" : "warn"}
           />
           <Stat
             label="Ownership (NFT) contract"
-            value={settings?.nft_contract ? shortHash(settings.nft_contract, 10, 8) : "Not deployed"}
-            href={settings?.nft_contract ? addressUrl(info.chainId, settings.nft_contract) : undefined}
+            value={
+              settings?.nft_contract ? shortHash(settings.nft_contract, 10, 8) : "Not deployed"
+            }
+            href={
+              settings?.nft_contract ? addressUrl(info.chainId, settings.nft_contract) : undefined
+            }
             tone={settings?.nft_contract ? "ok" : "warn"}
           />
         </div>
 
         <div className="flex flex-wrap gap-3 mt-2">
           <Action
-            onClick={() => run("deploy", () => deploy(), "Contracts deployed and the layer is live.")}
+            onClick={() =>
+              run("deploy", () => deploy(), "Contracts deployed and the layer is live.")
+            }
             busy={busy === "deploy"}
             icon={Rocket}
             primary
@@ -229,7 +310,9 @@ export function BlockchainManager() {
               run(
                 "toggle",
                 () => saveSettings({ data: { enabled: !settings?.enabled } }),
-                settings?.enabled ? "Verification layer hidden from the site." : "Verification layer is live.",
+                settings?.enabled
+                  ? "Verification layer hidden from the site."
+                  : "Verification layer is live.",
               )
             }
             busy={busy === "toggle"}
@@ -270,47 +353,220 @@ export function BlockchainManager() {
         ) : null}
       </Panel>
 
-      {/* Automatic anchoring */}
-      <Panel title="Automatic Anchoring">
-        <p className="text-sm text-[#D7E2EA]/60 font-light leading-relaxed">
-          New document uploads in the Media Library are anchored automatically. Existing portfolio
-          documents can be anchored below — each one is hashed with SHA-256, pinned to IPFS and
-          written to the verification contract.
-        </p>
-        <div className="flex flex-wrap gap-3">
-          <Action onClick={anchorAll} busy={busy === "anchor-all"} icon={Anchor} primary disabled={!deployed || pending.length === 0}>
-            Anchor all pending ({pending.length})
-          </Action>
-        </div>
-        <ul className="flex flex-col gap-2 list-none p-0 mt-2">
-          {tasks.map((t) => {
-            const done = anchoredRefs.has(t.subject_ref);
-            return (
-              <li
-                key={t.key}
-                className="flex items-center justify-between gap-3 rounded-2xl px-4 py-3"
-                style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(215,226,234,0.08)" }}
+      {/* Diagnostics */}
+      <Panel title="System Diagnostics">
+        {health.isLoading ? (
+          <Loading />
+        ) : health.isError ? (
+          <p className="text-sm text-rose-300">
+            {health.error instanceof Error ? health.error.message : "Diagnostics unavailable."}
+          </p>
+        ) : health.data ? (
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <Stat
+                label="RPC endpoint"
+                value={
+                  health.data.rpc.ok
+                    ? `Online · ${health.data.rpc.latency_ms}ms`
+                    : health.data.rpc.error || "Offline"
+                }
+                tone={health.data.rpc.ok ? "ok" : "warn"}
+              />
+              <Stat label="Latest block" value={health.data.rpc.block ?? "—"} />
+              <Stat
+                label="IPFS (Pinata)"
+                value={
+                  health.data.ipfs.ok ? "Authenticated" : health.data.ipfs.error || "Unavailable"
+                }
+                tone={health.data.ipfs.ok ? "ok" : "warn"}
+              />
+              <Stat
+                label="Contract state"
+                value={
+                  health.data.contracts.paused === null
+                    ? "Unknown"
+                    : health.data.contracts.paused
+                      ? "Paused"
+                      : "Active"
+                }
+                tone={health.data.contracts.paused ? "warn" : "ok"}
+              />
+              <Stat
+                label="Anchored / failed"
+                value={`${health.data.records.confirmed} confirmed · ${health.data.records.failed} failed`}
+                tone={health.data.records.failed > 0 ? "warn" : "ok"}
+              />
+              <Stat label="Ownership tokens" value={String(health.data.records.tokens)} />
+            </div>
+            <div className="flex flex-wrap gap-3 mt-2">
+              <Action
+                onClick={() =>
+                  run(
+                    "pause",
+                    () => pauseContract({ data: { paused: !health.data?.contracts.paused } }),
+                    health.data?.contracts.paused ? "Contract resumed." : "Contract paused.",
+                  )
+                }
+                busy={busy === "pause"}
+                icon={health.data.contracts.paused ? ShieldCheck : ShieldAlert}
+                disabled={!settings?.verification_contract}
               >
-                <div className="min-w-0">
-                  <div className="text-sm text-[#D7E2EA]/90 truncate">{t.label}</div>
-                  <div className="text-[10px] uppercase tracking-[0.25em] text-[#D7E2EA]/40">
-                    {SUBJECT_LABELS[t.subject_type]}
-                  </div>
+                {health.data.contracts.paused ? "Resume contract" : "Pause contract"}
+              </Action>
+              <Action
+                onClick={() => void health.refetch()}
+                busy={health.isFetching}
+                icon={RefreshCw}
+              >
+                Refresh diagnostics
+              </Action>
+            </div>
+          </>
+        ) : null}
+      </Panel>
+
+      {/* Migration */}
+      <Panel title="Verify Existing Files">
+        <p className="text-sm text-[#D7E2EA]/60 font-light leading-relaxed">
+          Every file uploaded before the trust layer existed can be anchored in one pass — each is
+          downloaded, hashed with SHA-256, pinned to IPFS and written to the verification contract.
+          The run is idempotent and resumable: already-verified files are skipped and failures stay
+          retryable.
+        </p>
+
+        {plan.isLoading ? (
+          <Loading />
+        ) : plan.isError ? (
+          <p className="text-sm text-rose-300">
+            {plan.error instanceof Error
+              ? plan.error.message
+              : "Could not build the migration plan."}
+          </p>
+        ) : (
+          <>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <Stat label="Discovered" value={String(planItems.length)} />
+              <Stat label="Verified" value={String(planTotals.verified)} tone="ok" />
+              <Stat
+                label="Pending"
+                value={String(planTotals.pending)}
+                tone={planTotals.pending ? "warn" : "ok"}
+              />
+              <Stat
+                label="Failed"
+                value={String(planTotals.failed)}
+                tone={planTotals.failed ? "warn" : "ok"}
+              />
+            </div>
+
+            {progress && (
+              <div
+                className="rounded-2xl px-4 py-4"
+                style={{ background: "rgba(255,255,255,0.03)" }}
+              >
+                <div className="flex items-center justify-between text-[11px] uppercase tracking-[0.2em] text-[#D7E2EA]/60 mb-2">
+                  <span>
+                    {progress.done === progress.total ? "Migration complete" : "Migrating…"}
+                  </span>
+                  <span>
+                    {progress.done}/{progress.total}
+                  </span>
                 </div>
-                {done ? (
-                  <span className="text-[10px] uppercase tracking-widest text-emerald-300 shrink-0">Anchored</span>
-                ) : (
-                  <Action onClick={() => anchorTask(t)} busy={busy === t.key} icon={Anchor} disabled={!deployed}>
-                    Anchor
-                  </Action>
-                )}
-              </li>
-            );
-          })}
-          {tasks.length === 0 && (
-            <li className="text-sm text-[#D7E2EA]/50">No portfolio documents found to anchor yet.</li>
-          )}
-        </ul>
+                <div
+                  role="progressbar"
+                  aria-valuemin={0}
+                  aria-valuemax={progress.total}
+                  aria-valuenow={progress.done}
+                  aria-label="Blockchain migration progress"
+                  className="h-1.5 w-full rounded-full overflow-hidden"
+                  style={{ background: "rgba(215,226,234,0.12)" }}
+                >
+                  <div
+                    className="h-full transition-all duration-500"
+                    style={{
+                      width: `${progress.total ? (progress.done / progress.total) * 100 : 0}%`,
+                      background: "linear-gradient(90deg, #4a9eff, #6ee7b7)",
+                    }}
+                  />
+                </div>
+                <p className="text-xs text-[#D7E2EA]/50 mt-2 truncate" aria-live="polite">
+                  {progress.current}
+                </p>
+              </div>
+            )}
+
+            <div className="flex flex-wrap gap-3">
+              <Action
+                onClick={() => runMigration(migratable)}
+                busy={busy === "migrate"}
+                icon={Anchor}
+                primary
+                disabled={!deployed || migratable.length === 0}
+              >
+                Verify all existing files ({migratable.length})
+              </Action>
+              <Action
+                onClick={() => runMigration(planItems.filter((i) => i.status === "failed"))}
+                busy={busy === "migrate-failed"}
+                icon={RefreshCw}
+                disabled={!deployed || planTotals.failed === 0}
+              >
+                Retry failed ({planTotals.failed})
+              </Action>
+            </div>
+
+            <ul className="flex flex-col gap-2 list-none p-0 mt-2 max-h-[26rem] overflow-y-auto">
+              {planItems.map((t) => {
+                const result = results[t.subject_ref];
+                return (
+                  <li
+                    key={t.key}
+                    className="flex items-center justify-between gap-3 rounded-2xl px-4 py-3"
+                    style={{
+                      background: "rgba(255,255,255,0.03)",
+                      border: "1px solid rgba(215,226,234,0.08)",
+                    }}
+                  >
+                    <div className="min-w-0">
+                      <div className="text-sm text-[#D7E2EA]/90 truncate">{t.label}</div>
+                      <div className="text-[10px] uppercase tracking-[0.25em] text-[#D7E2EA]/40">
+                        {SUBJECT_LABELS[t.subject_type]}
+                        {t.retry_count > 0 ? ` · ${t.retry_count} retries` : ""}
+                      </div>
+                      {(result?.message || t.error) && (
+                        <div
+                          className={`text-[11px] mt-1 truncate ${result?.ok === false || (!result && t.error) ? "text-rose-300" : "text-emerald-300/80"}`}
+                        >
+                          {result?.message || t.error}
+                        </div>
+                      )}
+                    </div>
+                    {t.status === "verified" || result?.ok ? (
+                      <span className="text-[10px] uppercase tracking-widest text-emerald-300 shrink-0">
+                        Verified
+                      </span>
+                    ) : (
+                      <Action
+                        onClick={() => runMigration([t])}
+                        busy={busy === `one-${t.key}`}
+                        icon={Anchor}
+                        disabled={!deployed}
+                      >
+                        Verify
+                      </Action>
+                    )}
+                  </li>
+                );
+              })}
+              {planItems.length === 0 && (
+                <li className="text-sm text-[#D7E2EA]/50">
+                  No portfolio files found to verify yet.
+                </li>
+              )}
+            </ul>
+          </>
+        )}
       </Panel>
 
       {/* Records */}
@@ -325,11 +581,16 @@ export function BlockchainManager() {
               <li
                 key={r.id}
                 className="flex items-start justify-between gap-3 rounded-2xl px-4 py-3"
-                style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(215,226,234,0.08)" }}
+                style={{
+                  background: "rgba(255,255,255,0.03)",
+                  border: "1px solid rgba(215,226,234,0.08)",
+                }}
               >
                 <div className="min-w-0">
                   <div className="text-sm text-[#D7E2EA]/90 truncate">{r.title}</div>
-                  <div className="text-[10px] font-mono text-[#D7E2EA]/45 truncate">{shortHash(r.sha256, 18, 10)}</div>
+                  <div className="text-[10px] font-mono text-[#D7E2EA]/45 truncate">
+                    {shortHash(r.sha256, 18, 10)}
+                  </div>
                   <div className="text-[10px] uppercase tracking-[0.2em] text-[#D7E2EA]/40">
                     {r.status} · {formatVerifiedDate(r.registered_at) || "not confirmed"}
                   </div>
@@ -348,8 +609,39 @@ export function BlockchainManager() {
                   )}
                   <button
                     type="button"
+                    aria-label={`Re-verify ${r.title} against the blockchain`}
+                    onClick={() =>
+                      run(
+                        `re-${r.id}`,
+                        async () => {
+                          const res = await revalidate({ data: { id: r.id } });
+                          if (!res.authentic)
+                            throw new Error(
+                              `"${r.title}" no longer matches its on-chain fingerprint.`,
+                            );
+                        },
+                        `"${r.title}" is authentic — hash matches the chain.`,
+                      )
+                    }
+                    className="p-2 rounded-full border border-[#D7E2EA]/15 text-[#D7E2EA]/70 hover:text-white transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4a9eff]"
+                  >
+                    {busy === `re-${r.id}` ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" aria-hidden="true" />
+                    ) : (
+                      <RefreshCw className="w-3.5 h-3.5" aria-hidden="true" />
+                    )}
+                  </button>
+
+                  <button
+                    type="button"
                     aria-label={`Delete record ${r.title}`}
-                    onClick={() => run(`del-${r.id}`, () => removeRecord({ data: { id: r.id } }), "Record removed.")}
+                    onClick={() =>
+                      run(
+                        `del-${r.id}`,
+                        () => removeRecord({ data: { id: r.id } }),
+                        "Record removed.",
+                      )
+                    }
                     className="p-2 rounded-full border border-rose-400/25 text-rose-300 hover:bg-rose-500/10 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400"
                   >
                     {busy === `del-${r.id}` ? (
@@ -370,14 +662,19 @@ export function BlockchainManager() {
         <MintForm
           disabled={!deployed}
           busy={busy === "mint"}
-          onMint={(payload) => run("mint", () => mint({ data: payload }), `Minted "${payload.project_name}".`)}
+          onMint={(payload) =>
+            run("mint", () => mint({ data: payload }), `Minted "${payload.project_name}".`)
+          }
         />
         <ul className="flex flex-col gap-2 list-none p-0 mt-2">
           {tokens.map((t) => (
             <li
               key={t.id}
               className="flex items-center justify-between gap-3 rounded-2xl px-4 py-3"
-              style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(215,226,234,0.08)" }}
+              style={{
+                background: "rgba(255,255,255,0.03)",
+                border: "1px solid rgba(215,226,234,0.08)",
+              }}
             >
               <div className="min-w-0">
                 <div className="text-sm text-[#D7E2EA]/90 truncate">{t.project_name}</div>
