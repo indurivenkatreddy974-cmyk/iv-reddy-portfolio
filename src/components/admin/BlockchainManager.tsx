@@ -270,48 +270,185 @@ export function BlockchainManager() {
         ) : null}
       </Panel>
 
-      {/* Automatic anchoring */}
-      <Panel title="Automatic Anchoring">
-        <p className="text-sm text-[#D7E2EA]/60 font-light leading-relaxed">
-          New document uploads in the Media Library are anchored automatically. Existing portfolio
-          documents can be anchored below — each one is hashed with SHA-256, pinned to IPFS and
-          written to the verification contract.
-        </p>
-        <div className="flex flex-wrap gap-3">
-          <Action onClick={anchorAll} busy={busy === "anchor-all"} icon={Anchor} primary disabled={!deployed || pending.length === 0}>
-            Anchor all pending ({pending.length})
-          </Action>
-        </div>
-        <ul className="flex flex-col gap-2 list-none p-0 mt-2">
-          {tasks.map((t) => {
-            const done = anchoredRefs.has(t.subject_ref);
-            return (
-              <li
-                key={t.key}
-                className="flex items-center justify-between gap-3 rounded-2xl px-4 py-3"
-                style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(215,226,234,0.08)" }}
+      {/* Diagnostics */}
+      <Panel title="System Diagnostics">
+        {health.isLoading ? (
+          <Loading />
+        ) : health.isError ? (
+          <p className="text-sm text-rose-300">
+            {health.error instanceof Error ? health.error.message : "Diagnostics unavailable."}
+          </p>
+        ) : health.data ? (
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <Stat
+                label="RPC endpoint"
+                value={health.data.rpc.ok ? `Online · ${health.data.rpc.latency_ms}ms` : health.data.rpc.error || "Offline"}
+                tone={health.data.rpc.ok ? "ok" : "warn"}
+              />
+              <Stat label="Latest block" value={health.data.rpc.block ?? "—"} />
+              <Stat
+                label="IPFS (Pinata)"
+                value={health.data.ipfs.ok ? "Authenticated" : health.data.ipfs.error || "Unavailable"}
+                tone={health.data.ipfs.ok ? "ok" : "warn"}
+              />
+              <Stat
+                label="Contract state"
+                value={
+                  health.data.contracts.paused === null
+                    ? "Unknown"
+                    : health.data.contracts.paused
+                      ? "Paused"
+                      : "Active"
+                }
+                tone={health.data.contracts.paused ? "warn" : "ok"}
+              />
+              <Stat
+                label="Anchored / failed"
+                value={`${health.data.records.confirmed} confirmed · ${health.data.records.failed} failed`}
+                tone={health.data.records.failed > 0 ? "warn" : "ok"}
+              />
+              <Stat label="Ownership tokens" value={String(health.data.records.tokens)} />
+            </div>
+            <div className="flex flex-wrap gap-3 mt-2">
+              <Action
+                onClick={() =>
+                  run(
+                    "pause",
+                    () => pauseContract({ data: { paused: !health.data?.contracts.paused } }),
+                    health.data?.contracts.paused ? "Contract resumed." : "Contract paused.",
+                  )
+                }
+                busy={busy === "pause"}
+                icon={health.data.contracts.paused ? ShieldCheck : ShieldAlert}
+                disabled={!settings?.verification_contract}
               >
-                <div className="min-w-0">
-                  <div className="text-sm text-[#D7E2EA]/90 truncate">{t.label}</div>
-                  <div className="text-[10px] uppercase tracking-[0.25em] text-[#D7E2EA]/40">
-                    {SUBJECT_LABELS[t.subject_type]}
-                  </div>
-                </div>
-                {done ? (
-                  <span className="text-[10px] uppercase tracking-widest text-emerald-300 shrink-0">Anchored</span>
-                ) : (
-                  <Action onClick={() => anchorTask(t)} busy={busy === t.key} icon={Anchor} disabled={!deployed}>
-                    Anchor
-                  </Action>
-                )}
-              </li>
-            );
-          })}
-          {tasks.length === 0 && (
-            <li className="text-sm text-[#D7E2EA]/50">No portfolio documents found to anchor yet.</li>
-          )}
-        </ul>
+                {health.data.contracts.paused ? "Resume contract" : "Pause contract"}
+              </Action>
+              <Action onClick={() => void health.refetch()} busy={health.isFetching} icon={RefreshCw}>
+                Refresh diagnostics
+              </Action>
+            </div>
+          </>
+        ) : null}
       </Panel>
+
+      {/* Migration */}
+      <Panel title="Verify Existing Files">
+        <p className="text-sm text-[#D7E2EA]/60 font-light leading-relaxed">
+          Every file uploaded before the trust layer existed can be anchored in one pass — each is
+          downloaded, hashed with SHA-256, pinned to IPFS and written to the verification contract.
+          The run is idempotent and resumable: already-verified files are skipped and failures stay
+          retryable.
+        </p>
+
+        {plan.isLoading ? (
+          <Loading />
+        ) : plan.isError ? (
+          <p className="text-sm text-rose-300">
+            {plan.error instanceof Error ? plan.error.message : "Could not build the migration plan."}
+          </p>
+        ) : (
+          <>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <Stat label="Discovered" value={String(planItems.length)} />
+              <Stat label="Verified" value={String(planTotals.verified)} tone="ok" />
+              <Stat label="Pending" value={String(planTotals.pending)} tone={planTotals.pending ? "warn" : "ok"} />
+              <Stat label="Failed" value={String(planTotals.failed)} tone={planTotals.failed ? "warn" : "ok"} />
+            </div>
+
+            {progress && (
+              <div className="rounded-2xl px-4 py-4" style={{ background: "rgba(255,255,255,0.03)" }}>
+                <div className="flex items-center justify-between text-[11px] uppercase tracking-[0.2em] text-[#D7E2EA]/60 mb-2">
+                  <span>{progress.done === progress.total ? "Migration complete" : "Migrating…"}</span>
+                  <span>
+                    {progress.done}/{progress.total}
+                  </span>
+                </div>
+                <div
+                  role="progressbar"
+                  aria-valuemin={0}
+                  aria-valuemax={progress.total}
+                  aria-valuenow={progress.done}
+                  aria-label="Blockchain migration progress"
+                  className="h-1.5 w-full rounded-full overflow-hidden"
+                  style={{ background: "rgba(215,226,234,0.12)" }}
+                >
+                  <div
+                    className="h-full transition-all duration-500"
+                    style={{
+                      width: `${progress.total ? (progress.done / progress.total) * 100 : 0}%`,
+                      background: "linear-gradient(90deg, #4a9eff, #6ee7b7)",
+                    }}
+                  />
+                </div>
+                <p className="text-xs text-[#D7E2EA]/50 mt-2 truncate" aria-live="polite">
+                  {progress.current}
+                </p>
+              </div>
+            )}
+
+            <div className="flex flex-wrap gap-3">
+              <Action
+                onClick={() => runMigration(migratable)}
+                busy={busy === "migrate"}
+                icon={Anchor}
+                primary
+                disabled={!deployed || migratable.length === 0}
+              >
+                Verify all existing files ({migratable.length})
+              </Action>
+              <Action
+                onClick={() => runMigration(planItems.filter((i) => i.status === "failed"))}
+                busy={busy === "migrate-failed"}
+                icon={RefreshCw}
+                disabled={!deployed || planTotals.failed === 0}
+              >
+                Retry failed ({planTotals.failed})
+              </Action>
+            </div>
+
+            <ul className="flex flex-col gap-2 list-none p-0 mt-2 max-h-[26rem] overflow-y-auto">
+              {planItems.map((t) => {
+                const result = results[t.subject_ref];
+                return (
+                  <li
+                    key={t.key}
+                    className="flex items-center justify-between gap-3 rounded-2xl px-4 py-3"
+                    style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(215,226,234,0.08)" }}
+                  >
+                    <div className="min-w-0">
+                      <div className="text-sm text-[#D7E2EA]/90 truncate">{t.label}</div>
+                      <div className="text-[10px] uppercase tracking-[0.25em] text-[#D7E2EA]/40">
+                        {SUBJECT_LABELS[t.subject_type]}
+                        {t.retry_count > 0 ? ` · ${t.retry_count} retries` : ""}
+                      </div>
+                      {(result?.message || t.error) && (
+                        <div
+                          className={`text-[11px] mt-1 truncate ${result?.ok === false || (!result && t.error) ? "text-rose-300" : "text-emerald-300/80"}`}
+                        >
+                          {result?.message || t.error}
+                        </div>
+                      )}
+                    </div>
+                    {t.status === "verified" || result?.ok ? (
+                      <span className="text-[10px] uppercase tracking-widest text-emerald-300 shrink-0">Verified</span>
+                    ) : (
+                      <Action onClick={() => runMigration([t])} busy={busy === `one-${t.key}`} icon={Anchor} disabled={!deployed}>
+                        Verify
+                      </Action>
+                    )}
+                  </li>
+                );
+              })}
+              {planItems.length === 0 && (
+                <li className="text-sm text-[#D7E2EA]/50">No portfolio files found to verify yet.</li>
+              )}
+            </ul>
+          </>
+        )}
+      </Panel>
+
 
       {/* Records */}
       <Panel title={`Anchored Records (${records.length})`}>
