@@ -21,7 +21,11 @@ export const RegisterDocumentInput = z
     file_name: z.string().max(200).optional().nullable(),
     /** Either a source URL already hosted by the app, or an inline base64 payload. */
     source_url: z.string().max(2000).optional().nullable(),
-    file_base64: z.string().max(Math.ceil(MAX_INLINE_BYTES * 1.4)).optional().nullable(),
+    file_base64: z
+      .string()
+      .max(Math.ceil(MAX_INLINE_BYTES * 1.4))
+      .optional()
+      .nullable(),
     mime: z.string().max(200).optional().nullable(),
     metadata: z.record(z.string(), z.unknown()).optional(),
   })
@@ -34,7 +38,11 @@ export const MintTokenInput = z.object({
   project_name: z.string().min(1).max(200),
   description: z.string().max(2000).optional().nullable(),
   artwork_url: z.string().max(2000).optional().nullable(),
-  owner_wallet: z.string().regex(/^0x[0-9a-fA-F]{40}$/).optional().nullable(),
+  owner_wallet: z
+    .string()
+    .regex(/^0x[0-9a-fA-F]{40}$/)
+    .optional()
+    .nullable(),
   sort_order: z.number().int().min(0).max(999).default(0),
 });
 

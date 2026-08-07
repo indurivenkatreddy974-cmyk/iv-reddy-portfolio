@@ -35,7 +35,10 @@ function mediaUrl(path: string) {
 
 function isDocumentLike(url: string | null | undefined) {
   if (!url) return false;
-  return /\.(pdf|png|jpe?g|webp|zip|md|txt|docx?|csv|json)(\?|$)/i.test(url) || url.includes(MEDIA_PREFIX);
+  return (
+    /\.(pdf|png|jpe?g|webp|zip|md|txt|docx?|csv|json)(\?|$)/i.test(url) ||
+    url.includes(MEDIA_PREFIX)
+  );
 }
 
 /** Targets derived from the database itself (showcase items + media library). */
@@ -53,11 +56,7 @@ async function serverTargets(): Promise<MigrationTarget[]> {
     const url = it.media_url || it.thumbnail_url;
     if (!isDocumentLike(url)) continue;
     const subject =
-      it.kind === "certification"
-        ? "certificate"
-        : it.kind === "achievement"
-          ? "asset"
-          : "project";
+      it.kind === "certification" ? "certificate" : it.kind === "achievement" ? "asset" : "project";
     out.push({
       key: `showcase-${it.id}`,
       label: it.title,
@@ -120,14 +119,23 @@ export async function planMigration(clientTargets: MigrationTarget[]): Promise<{
   const { data: records } = await db
     .from("blockchain_records")
     .select("id, subject_ref, status, tx_hash, error_message, retry_count")
-    .in("subject_ref", targets.map((t) => t.subject_ref));
+    .in(
+      "subject_ref",
+      targets.map((t) => t.subject_ref),
+    );
 
   const byRef = new Map((records ?? []).map((r) => [r.subject_ref ?? "", r]));
 
   const items: PlanItem[] = targets.map((t) => {
     const rec = byRef.get(t.subject_ref);
     const status: PlanItem["status"] =
-      rec?.status === "confirmed" ? "verified" : rec?.status === "failed" ? "failed" : rec ? "pending" : "pending";
+      rec?.status === "confirmed"
+        ? "verified"
+        : rec?.status === "failed"
+          ? "failed"
+          : rec
+            ? "pending"
+            : "pending";
     return {
       ...t,
       status,
@@ -217,7 +225,8 @@ export async function migrateBatch(targets: MigrationTarget[]): Promise<BatchRes
         });
         continue;
       }
-      if (retry > 0) await db.from("blockchain_records").update({ retry_count: retry }).eq("id", res.id);
+      if (retry > 0)
+        await db.from("blockchain_records").update({ retry_count: retry }).eq("id", res.id);
       results.push({
         key: t.key,
         subject_ref: t.subject_ref,
@@ -245,7 +254,11 @@ export async function migrateBatch(targets: MigrationTarget[]): Promise<BatchRes
 /** Re-download the stored copy, re-hash it and compare with the chain. */
 export async function revalidateRecord(id: string) {
   const db = await admin();
-  const { data: record, error } = await db.from("blockchain_records").select("*").eq("id", id).maybeSingle();
+  const { data: record, error } = await db
+    .from("blockchain_records")
+    .select("*")
+    .eq("id", id)
+    .maybeSingle();
   if (error) throw new Error(error.message);
   if (!record) throw new Error("Record not found.");
 
@@ -263,7 +276,10 @@ export async function revalidateRecord(id: string) {
     const message = err instanceof Error ? err.message : "Retrieval failed.";
     await db
       .from("blockchain_records")
-      .update({ last_checked_at: new Date().toISOString(), last_check_result: `unreachable: ${message}`.slice(0, 300) })
+      .update({
+        last_checked_at: new Date().toISOString(),
+        last_check_result: `unreachable: ${message}`.slice(0, 300),
+      })
       .eq("id", id);
     throw new Error(message);
   }
@@ -291,14 +307,26 @@ export async function revalidateRecord(id: string) {
     .update({ last_checked_at: new Date().toISOString(), last_check_result: outcome })
     .eq("id", id);
 
-  return { id, authentic: outcome === "authentic", sha256: digest, on_chain: onChain, expected: record.sha256 };
+  return {
+    id,
+    authentic: outcome === "authentic",
+    sha256: digest,
+    on_chain: onChain,
+    expected: record.sha256,
+  };
 }
 
 /** Live health of every external dependency the trust layer relies on. */
 export async function diagnostics() {
   const db = await admin();
   const out: {
-    rpc: { ok: boolean; chain: string | null; block: string | null; latency_ms: number | null; error: string | null };
+    rpc: {
+      ok: boolean;
+      chain: string | null;
+      block: string | null;
+      latency_ms: number | null;
+      error: string | null;
+    };
     wallet: { address: string | null; balance: string | null; currency: string; funded: boolean };
     ipfs: { ok: boolean; error: string | null };
     contracts: { verification: string | null; nft: string | null; paused: boolean | null };
@@ -311,7 +339,11 @@ export async function diagnostics() {
     records: { total: 0, confirmed: 0, failed: 0, pending: 0, tokens: 0 },
   };
 
-  const { data: settings } = await db.from("blockchain_settings").select("*").eq("id", 1).maybeSingle();
+  const { data: settings } = await db
+    .from("blockchain_settings")
+    .select("*")
+    .eq("id", 1)
+    .maybeSingle();
   out.contracts.verification = settings?.verification_contract ?? null;
   out.contracts.nft = settings?.nft_contract ?? null;
 
@@ -323,7 +355,13 @@ export async function diagnostics() {
       publicClient.getBalance({ address: account.address }),
     ]);
     const info = chainInfo(chainId);
-    out.rpc = { ok: true, chain: info.label, block: block.toString(), latency_ms: Date.now() - started, error: null };
+    out.rpc = {
+      ok: true,
+      chain: info.label,
+      block: block.toString(),
+      latency_ms: Date.now() - started,
+      error: null,
+    };
     out.wallet = {
       address: account.address,
       balance: (Number(balance) / 1e18).toFixed(5),
@@ -350,7 +388,9 @@ export async function diagnostics() {
     const res = await fetch("https://api.pinata.cloud/data/testAuthentication", {
       headers: { Authorization: `Bearer ${pinataJwt}` },
     });
-    out.ipfs = res.ok ? { ok: true, error: null } : { ok: false, error: `Pinata responded ${res.status}` };
+    out.ipfs = res.ok
+      ? { ok: true, error: null }
+      : { ok: false, error: `Pinata responded ${res.status}` };
   } catch (err) {
     out.ipfs = { ok: false, error: err instanceof Error ? err.message : "Pinata unreachable." };
   }
@@ -379,7 +419,8 @@ export async function setContractPaused(paused: boolean) {
     .select("verification_contract")
     .eq("id", 1)
     .maybeSingle();
-  if (!settings?.verification_contract) throw new Error("Verification contract is not deployed yet.");
+  if (!settings?.verification_contract)
+    throw new Error("Verification contract is not deployed yet.");
 
   const { publicClient, walletClient, account } = await getClients();
   const { request } = await publicClient.simulateContract({
