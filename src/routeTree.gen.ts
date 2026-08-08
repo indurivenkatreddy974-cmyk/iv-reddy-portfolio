@@ -17,6 +17,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiPublicCredentialsRouteImport } from './routes/api/public/credentials'
 import { Route as ApiPublicMSplatRouteImport } from './routes/api/public/m/$'
 import { Route as ApiPublicCredentialIdRouteImport } from './routes/api/public/credential/$id'
+import { Route as ApiPublicCredentialTokenIdRouteImport } from './routes/api/public/credential/token.$id'
 
 const VerifyRoute = VerifyRouteImport.update({
   id: '/verify',
@@ -58,6 +59,12 @@ const ApiPublicCredentialIdRoute = ApiPublicCredentialIdRouteImport.update({
   path: '/api/public/credential/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicCredentialTokenIdRoute =
+  ApiPublicCredentialTokenIdRouteImport.update({
+    id: '/api/public/credential/token/$id',
+    path: '/api/public/credential/token/$id',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -68,6 +75,7 @@ export interface FileRoutesByFullPath {
   '/api/public/credentials': typeof ApiPublicCredentialsRoute
   '/api/public/credential/$id': typeof ApiPublicCredentialIdRoute
   '/api/public/m/$': typeof ApiPublicMSplatRoute
+  '/api/public/credential/token/$id': typeof ApiPublicCredentialTokenIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -78,6 +86,7 @@ export interface FileRoutesByTo {
   '/api/public/credentials': typeof ApiPublicCredentialsRoute
   '/api/public/credential/$id': typeof ApiPublicCredentialIdRoute
   '/api/public/m/$': typeof ApiPublicMSplatRoute
+  '/api/public/credential/token/$id': typeof ApiPublicCredentialTokenIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -89,6 +98,7 @@ export interface FileRoutesById {
   '/api/public/credentials': typeof ApiPublicCredentialsRoute
   '/api/public/credential/$id': typeof ApiPublicCredentialIdRoute
   '/api/public/m/$': typeof ApiPublicMSplatRoute
+  '/api/public/credential/token/$id': typeof ApiPublicCredentialTokenIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -101,6 +111,7 @@ export interface FileRouteTypes {
     | '/api/public/credentials'
     | '/api/public/credential/$id'
     | '/api/public/m/$'
+    | '/api/public/credential/token/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -111,6 +122,7 @@ export interface FileRouteTypes {
     | '/api/public/credentials'
     | '/api/public/credential/$id'
     | '/api/public/m/$'
+    | '/api/public/credential/token/$id'
   id:
     | '__root__'
     | '/'
@@ -121,6 +133,7 @@ export interface FileRouteTypes {
     | '/api/public/credentials'
     | '/api/public/credential/$id'
     | '/api/public/m/$'
+    | '/api/public/credential/token/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -132,6 +145,7 @@ export interface RootRouteChildren {
   ApiPublicCredentialsRoute: typeof ApiPublicCredentialsRoute
   ApiPublicCredentialIdRoute: typeof ApiPublicCredentialIdRoute
   ApiPublicMSplatRoute: typeof ApiPublicMSplatRoute
+  ApiPublicCredentialTokenIdRoute: typeof ApiPublicCredentialTokenIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -192,6 +206,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCredentialIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/credential/token/$id': {
+      id: '/api/public/credential/token/$id'
+      path: '/api/public/credential/token/$id'
+      fullPath: '/api/public/credential/token/$id'
+      preLoaderRoute: typeof ApiPublicCredentialTokenIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -204,6 +225,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicCredentialsRoute: ApiPublicCredentialsRoute,
   ApiPublicCredentialIdRoute: ApiPublicCredentialIdRoute,
   ApiPublicMSplatRoute: ApiPublicMSplatRoute,
+  ApiPublicCredentialTokenIdRoute: ApiPublicCredentialTokenIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
