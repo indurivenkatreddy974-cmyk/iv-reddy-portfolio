@@ -658,46 +658,22 @@ export function BlockchainManager() {
       </Panel>
 
       {/* Mint */}
-      <Panel title={`Digital Ownership Tokens (${tokens.length})`}>
-        <MintForm
+      <Panel title={`Digital Ownership Tokens (${tokens.filter((t) => t.token_id).length} minted)`}>
+        <EligibleProjects
           disabled={!deployed}
-          busy={busy === "mint"}
+          busyRef={busy}
+          tokens={tokens}
+          gateway={settings?.ipfs_gateway}
           onMint={(payload) =>
-            run("mint", () => mint({ data: payload }), `Minted "${payload.project_name}".`)
+            run(
+              `mint:${payload.project_ref}`,
+              () => mint({ data: payload }),
+              `Minted "${payload.project_name}".`,
+            )
           }
         />
-        <ul className="flex flex-col gap-2 list-none p-0 mt-2">
-          {tokens.map((t) => (
-            <li
-              key={t.id}
-              className="flex items-center justify-between gap-3 rounded-2xl px-4 py-3"
-              style={{
-                background: "rgba(255,255,255,0.03)",
-                border: "1px solid rgba(215,226,234,0.08)",
-              }}
-            >
-              <div className="min-w-0">
-                <div className="text-sm text-[#D7E2EA]/90 truncate">{t.project_name}</div>
-                <div className="text-[10px] uppercase tracking-[0.2em] text-[#D7E2EA]/40">
-                  {t.status}
-                  {t.token_id ? ` · #${t.token_id}` : ""}
-                </div>
-              </div>
-              {t.mint_tx_hash && (
-                <a
-                  href={txUrl(t.chain_id, t.mint_tx_hash)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={`View mint transaction for ${t.project_name}`}
-                  className="p-2 rounded-full border border-[#D7E2EA]/15 text-[#D7E2EA]/70 hover:text-white transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4a9eff]"
-                >
-                  <ExternalLink className="w-3.5 h-3.5" aria-hidden="true" />
-                </a>
-              )}
-            </li>
-          ))}
-        </ul>
       </Panel>
+
     </div>
   );
 }
