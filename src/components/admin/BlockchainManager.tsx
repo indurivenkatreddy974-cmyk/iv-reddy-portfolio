@@ -32,6 +32,8 @@ import {
   chainInfo,
   formatVerifiedDate,
   shortHash,
+  ipfsUrl,
+  tokenUrl,
   SUBJECT_LABELS,
   txUrl,
   type PublicRecord,
@@ -773,13 +775,17 @@ function Loading() {
   );
 }
 
-function MintForm({
+function EligibleProjects({
   disabled,
-  busy,
+  busyRef,
+  tokens,
+  gateway,
   onMint,
 }: {
   disabled: boolean;
-  busy: boolean;
+  busyRef: string | null;
+  tokens: PublicToken[];
+  gateway?: string | undefined;
   onMint: (payload: {
     project_ref: string;
     project_name: string;
@@ -789,46 +795,100 @@ function MintForm({
   }) => void;
 }) {
   const projects = useContent((s) => s.projects);
-  const [ref, setRef] = useState("");
-  const selected = projects.find((p) => p.id === ref);
+  const byRef = new Map(tokens.map((t) => [t.project_ref ?? "", t]));
+
+  if (projects.length === 0) {
+    return (
+      <p className="text-sm text-[#D7E2EA]/50">
+        Add projects in the Showcase tab — each one becomes eligible for an ownership token.
+      </p>
+    );
+  }
 
   return (
-    <div className="flex flex-col sm:flex-row gap-3">
-      <label className="flex-1">
-        <span className="sr-only">Project to mint</span>
-        <select
-          value={ref}
-          onChange={(e) => setRef(e.target.value)}
-          className="w-full rounded-full px-4 py-2.5 text-sm bg-transparent border border-[#D7E2EA]/20 text-[#D7E2EA] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4a9eff]"
-        >
-          <option value="" style={{ background: "#0C0C0C" }}>
-            Select a flagship project…
-          </option>
-          {projects.map((p) => (
-            <option key={p.id} value={p.id} style={{ background: "#0C0C0C" }}>
-              {p.name}
-            </option>
-          ))}
-        </select>
-      </label>
-      <Action
-        onClick={() => {
-          if (!selected) return;
-          onMint({
-            project_ref: verificationRef("project", selected.id),
-            project_name: selected.name,
-            description: selected.desc || undefined,
-            artwork_url: selected.imgs?.[0] || undefined,
-            sort_order: 0,
-          });
-        }}
-        busy={busy}
-        icon={Gem}
-        primary
-        disabled={disabled || !selected}
-      >
-        Mint ownership token
-      </Action>
-    </div>
+    <ul className="flex flex-col gap-2 list-none p-0">
+      {projects.map((p, i) => {
+        const ref = verificationRef("project", p.id);
+        const token = byRef.get(ref);
+        const minted = Boolean(token?.token_id && token.status === "confirmed");
+        const key = `mint:${ref}`;
+        return (
+          <li
+            key={p.id}
+            className="flex flex-wrap items-center justify-between gap-3 rounded-2xl px-4 py-3"
+            style={{
+              background: "rgba(255,255,255,0.03)",
+              border: `1px solid ${minted ? "rgba(118,33,176,0.35)" : "rgba(215,226,234,0.08)"}`,
+            }}
+          >
+            <div className="min-w-0 flex-1">
+              <div className="text-sm text-[#D7E2EA]/90 truncate">{p.name}</div>
+              <div className="text-[10px] uppercase tracking-[0.2em] text-[#D7E2EA]/40 truncate">
+                {minted
+                  ? `Minted · Token #${token?.token_id} · ${formatVerifiedDate(token?.minted_at)}`
+                  : token?.status === "failed"
+                    ? `Mint failed — retry available`
+                    : token?.status === "pending"
+                      ? "Mint pending confirmation"
+                      : "Not minted"}
+              </div>
+              {minted && token?.metadata_cid && (
+                <a
+                  href={ipfsUrl(token.metadata_cid, gateway)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[10px] font-mono text-[#4a9eff]/80 hover:text-[#4a9eff] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4a9eff] rounded"
+                >
+                  ipfs://{shortHash(token.metadata_cid, 10, 6)}
+                </a>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              {minted && token?.contract_address && token.token_id && (
+                <a
+                  href={tokenUrl(token.chain_id, token.contract_address, token.token_id)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`View token for ${p.name} on the explorer`}
+                  className="p-2 rounded-full border border-[#D7E2EA]/15 text-[#D7E2EA]/70 hover:text-white transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4a9eff]"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" aria-hidden="true" />
+                </a>
+              )}
+              {minted ? (
+                <span
+                  className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[10px] uppercase tracking-[0.18em]"
+                  style={{
+                    background: "rgba(118,33,176,0.14)",
+                    border: "1px solid rgba(118,33,176,0.4)",
+                    color: "#cbb0ff",
+                  }}
+                >
+                  <Gem className="w-3.5 h-3.5" aria-hidden="true" /> Owned on-chain
+                </span>
+              ) : (
+                <Action
+                  onClick={() =>
+                    onMint({
+                      project_ref: ref,
+                      project_name: p.name,
+                      description: p.desc || undefined,
+                      artwork_url: p.imgs?.[0] || undefined,
+                      sort_order: i,
+                    })
+                  }
+                  busy={busyRef === key}
+                  icon={Gem}
+                  primary
+                  disabled={disabled || Boolean(busyRef)}
+                >
+                  {token?.status === "failed" ? "Retry mint" : "Mint"}
+                </Action>
+              )}
+            </div>
+          </li>
+        );
+      })}
+    </ul>
   );
 }
