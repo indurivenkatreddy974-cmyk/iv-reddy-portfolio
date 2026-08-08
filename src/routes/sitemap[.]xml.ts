@@ -19,6 +19,8 @@ export const Route = createFileRoute("/sitemap.xml")({
         // No <lastmod>: there is no authoritative per-page content timestamp.
         const entries: SitemapEntry[] = [
           { path: "/", changefreq: "weekly", priority: "1.0" },
+          { path: "/verify", changefreq: "weekly", priority: "0.8" },
+          { path: "/ownership", changefreq: "weekly", priority: "0.8" },
         ];
 
         const urls = entries.map((e) =>

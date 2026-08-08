@@ -12,10 +12,13 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as VerifyRouteImport } from './routes/verify'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
+import { Route as OwnershipRouteImport } from './routes/ownership'
 import { Route as AtelierRouteImport } from './routes/atelier'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApiPublicCredentialsRouteImport } from './routes/api/public/credentials'
 import { Route as ApiPublicMSplatRouteImport } from './routes/api/public/m/$'
 import { Route as ApiPublicCredentialIdRouteImport } from './routes/api/public/credential/$id'
+import { Route as ApiPublicCredentialTokenIdRouteImport } from './routes/api/public/credential/token.$id'
 
 const VerifyRoute = VerifyRouteImport.update({
   id: '/verify',
@@ -32,6 +35,11 @@ const RobotsDottxtRoute = RobotsDottxtRouteImport.update({
   path: '/robots.txt',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OwnershipRoute = OwnershipRouteImport.update({
+  id: '/ownership',
+  path: '/ownership',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AtelierRoute = AtelierRouteImport.update({
   id: '/atelier',
   path: '/atelier',
@@ -40,6 +48,11 @@ const AtelierRoute = AtelierRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicCredentialsRoute = ApiPublicCredentialsRouteImport.update({
+  id: '/api/public/credentials',
+  path: '/api/public/credentials',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPublicMSplatRoute = ApiPublicMSplatRouteImport.update({
@@ -52,73 +65,100 @@ const ApiPublicCredentialIdRoute = ApiPublicCredentialIdRouteImport.update({
   path: '/api/public/credential/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicCredentialTokenIdRoute =
+  ApiPublicCredentialTokenIdRouteImport.update({
+    id: '/api/public/credential/token/$id',
+    path: '/api/public/credential/token/$id',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/atelier': typeof AtelierRoute
+  '/ownership': typeof OwnershipRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/verify': typeof VerifyRoute
+  '/api/public/credentials': typeof ApiPublicCredentialsRoute
   '/api/public/credential/$id': typeof ApiPublicCredentialIdRoute
   '/api/public/m/$': typeof ApiPublicMSplatRoute
+  '/api/public/credential/token/$id': typeof ApiPublicCredentialTokenIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/atelier': typeof AtelierRoute
+  '/ownership': typeof OwnershipRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/verify': typeof VerifyRoute
+  '/api/public/credentials': typeof ApiPublicCredentialsRoute
   '/api/public/credential/$id': typeof ApiPublicCredentialIdRoute
   '/api/public/m/$': typeof ApiPublicMSplatRoute
+  '/api/public/credential/token/$id': typeof ApiPublicCredentialTokenIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/atelier': typeof AtelierRoute
+  '/ownership': typeof OwnershipRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/verify': typeof VerifyRoute
+  '/api/public/credentials': typeof ApiPublicCredentialsRoute
   '/api/public/credential/$id': typeof ApiPublicCredentialIdRoute
   '/api/public/m/$': typeof ApiPublicMSplatRoute
+  '/api/public/credential/token/$id': typeof ApiPublicCredentialTokenIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/atelier'
+    | '/ownership'
     | '/robots.txt'
     | '/sitemap.xml'
     | '/verify'
+    | '/api/public/credentials'
     | '/api/public/credential/$id'
     | '/api/public/m/$'
+    | '/api/public/credential/token/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/atelier'
+    | '/ownership'
     | '/robots.txt'
     | '/sitemap.xml'
     | '/verify'
+    | '/api/public/credentials'
     | '/api/public/credential/$id'
     | '/api/public/m/$'
+    | '/api/public/credential/token/$id'
   id:
     | '__root__'
     | '/'
     | '/atelier'
+    | '/ownership'
     | '/robots.txt'
     | '/sitemap.xml'
     | '/verify'
+    | '/api/public/credentials'
     | '/api/public/credential/$id'
     | '/api/public/m/$'
+    | '/api/public/credential/token/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AtelierRoute: typeof AtelierRoute
+  OwnershipRoute: typeof OwnershipRoute
   RobotsDottxtRoute: typeof RobotsDottxtRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   VerifyRoute: typeof VerifyRoute
+  ApiPublicCredentialsRoute: typeof ApiPublicCredentialsRoute
   ApiPublicCredentialIdRoute: typeof ApiPublicCredentialIdRoute
   ApiPublicMSplatRoute: typeof ApiPublicMSplatRoute
+  ApiPublicCredentialTokenIdRoute: typeof ApiPublicCredentialTokenIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -144,6 +184,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RobotsDottxtRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/ownership': {
+      id: '/ownership'
+      path: '/ownership'
+      fullPath: '/ownership'
+      preLoaderRoute: typeof OwnershipRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/atelier': {
       id: '/atelier'
       path: '/atelier'
@@ -156,6 +203,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/credentials': {
+      id: '/api/public/credentials'
+      path: '/api/public/credentials'
+      fullPath: '/api/public/credentials'
+      preLoaderRoute: typeof ApiPublicCredentialsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/m/$': {
@@ -172,28 +226,28 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCredentialIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/credential/token/$id': {
+      id: '/api/public/credential/token/$id'
+      path: '/api/public/credential/token/$id'
+      fullPath: '/api/public/credential/token/$id'
+      preLoaderRoute: typeof ApiPublicCredentialTokenIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AtelierRoute: AtelierRoute,
+  OwnershipRoute: OwnershipRoute,
   RobotsDottxtRoute: RobotsDottxtRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   VerifyRoute: VerifyRoute,
+  ApiPublicCredentialsRoute: ApiPublicCredentialsRoute,
   ApiPublicCredentialIdRoute: ApiPublicCredentialIdRoute,
   ApiPublicMSplatRoute: ApiPublicMSplatRoute,
+  ApiPublicCredentialTokenIdRoute: ApiPublicCredentialTokenIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
