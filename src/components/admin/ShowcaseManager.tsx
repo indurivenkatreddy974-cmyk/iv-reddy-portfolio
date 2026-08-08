@@ -944,20 +944,20 @@ function UploadDropzone({ onUploaded }: { onUploaded: () => void }) {
         });
         update({ progress: 100, status: "done" });
 
-        // Automatic on-chain anchoring for document uploads. Best effort:
-        // the server returns { anchored: false } when the chain layer is off.
-        if (kind === "pdf" || kind === "other") {
-          void anchor({
-            data: {
-              subject_type: "asset",
-              subject_ref: `media:${signed.path}`,
-              title: file.name,
-              file_name: file.name,
-              source_url: `/api/public/m/${signed.path}`,
-              mime: processed.type || file.type,
-            },
-          }).catch(() => undefined);
-        }
+        // Automatic on-chain anchoring for EVERY upload (documents, images and
+        // video alike). Best effort: the server returns { anchored: false }
+        // when the chain layer is disabled or a contract is not deployed.
+        void anchor({
+          data: {
+            subject_type: "asset",
+            subject_ref: `media:${signed.path}`,
+            title: file.name,
+            file_name: file.name,
+            source_url: `/api/public/m/${signed.path}`,
+            mime: processed.type || file.type,
+            metadata: { media_kind: kind },
+          },
+        }).catch(() => undefined);
 
         onUploaded();
         setTimeout(() => setJobs((js) => js.filter((j) => j.id !== jobId)), 1500);
