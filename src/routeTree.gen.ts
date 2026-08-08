@@ -14,6 +14,7 @@ import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
 import { Route as AtelierRouteImport } from './routes/atelier'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApiPublicCredentialsRouteImport } from './routes/api/public/credentials'
 import { Route as ApiPublicMSplatRouteImport } from './routes/api/public/m/$'
 import { Route as ApiPublicCredentialIdRouteImport } from './routes/api/public/credential/$id'
 
@@ -42,6 +43,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicCredentialsRoute = ApiPublicCredentialsRouteImport.update({
+  id: '/api/public/credentials',
+  path: '/api/public/credentials',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicMSplatRoute = ApiPublicMSplatRouteImport.update({
   id: '/api/public/m/$',
   path: '/api/public/m/$',
@@ -59,6 +65,7 @@ export interface FileRoutesByFullPath {
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/verify': typeof VerifyRoute
+  '/api/public/credentials': typeof ApiPublicCredentialsRoute
   '/api/public/credential/$id': typeof ApiPublicCredentialIdRoute
   '/api/public/m/$': typeof ApiPublicMSplatRoute
 }
@@ -68,6 +75,7 @@ export interface FileRoutesByTo {
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/verify': typeof VerifyRoute
+  '/api/public/credentials': typeof ApiPublicCredentialsRoute
   '/api/public/credential/$id': typeof ApiPublicCredentialIdRoute
   '/api/public/m/$': typeof ApiPublicMSplatRoute
 }
@@ -78,6 +86,7 @@ export interface FileRoutesById {
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/verify': typeof VerifyRoute
+  '/api/public/credentials': typeof ApiPublicCredentialsRoute
   '/api/public/credential/$id': typeof ApiPublicCredentialIdRoute
   '/api/public/m/$': typeof ApiPublicMSplatRoute
 }
@@ -89,6 +98,7 @@ export interface FileRouteTypes {
     | '/robots.txt'
     | '/sitemap.xml'
     | '/verify'
+    | '/api/public/credentials'
     | '/api/public/credential/$id'
     | '/api/public/m/$'
   fileRoutesByTo: FileRoutesByTo
@@ -98,6 +108,7 @@ export interface FileRouteTypes {
     | '/robots.txt'
     | '/sitemap.xml'
     | '/verify'
+    | '/api/public/credentials'
     | '/api/public/credential/$id'
     | '/api/public/m/$'
   id:
@@ -107,6 +118,7 @@ export interface FileRouteTypes {
     | '/robots.txt'
     | '/sitemap.xml'
     | '/verify'
+    | '/api/public/credentials'
     | '/api/public/credential/$id'
     | '/api/public/m/$'
   fileRoutesById: FileRoutesById
@@ -117,6 +129,7 @@ export interface RootRouteChildren {
   RobotsDottxtRoute: typeof RobotsDottxtRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   VerifyRoute: typeof VerifyRoute
+  ApiPublicCredentialsRoute: typeof ApiPublicCredentialsRoute
   ApiPublicCredentialIdRoute: typeof ApiPublicCredentialIdRoute
   ApiPublicMSplatRoute: typeof ApiPublicMSplatRoute
 }
@@ -158,6 +171,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/credentials': {
+      id: '/api/public/credentials'
+      path: '/api/public/credentials'
+      fullPath: '/api/public/credentials'
+      preLoaderRoute: typeof ApiPublicCredentialsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/m/$': {
       id: '/api/public/m/$'
       path: '/api/public/m/$'
@@ -181,19 +201,10 @@ const rootRouteChildren: RootRouteChildren = {
   RobotsDottxtRoute: RobotsDottxtRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   VerifyRoute: VerifyRoute,
+  ApiPublicCredentialsRoute: ApiPublicCredentialsRoute,
   ApiPublicCredentialIdRoute: ApiPublicCredentialIdRoute,
   ApiPublicMSplatRoute: ApiPublicMSplatRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
