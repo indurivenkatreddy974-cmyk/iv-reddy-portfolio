@@ -108,7 +108,7 @@ function AuthGate() {
           </div>
           <div>
             <div className="text-xs uppercase tracking-[0.3em] text-[#D7E2EA]/60">IV · Atelier</div>
-            <div className="text-lg font-medium text-[#D7E2EA]">Sign In</div>
+            <h1 className="text-lg font-medium text-[#D7E2EA]">Sign In</h1>
           </div>
         </div>
 

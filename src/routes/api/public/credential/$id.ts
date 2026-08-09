@@ -31,13 +31,16 @@ export const Route = createFileRoute("/api/public/credential/$id")({
           });
         }
 
-        return new Response(JSON.stringify(buildVerifiableCredential(record, SITE_ORIGIN), null, 2), {
-          headers: {
-            "Content-Type": "application/ld+json; charset=utf-8",
-            "Cache-Control": "public, max-age=600",
-            "Access-Control-Allow-Origin": "*",
+        return new Response(
+          JSON.stringify(buildVerifiableCredential(record, SITE_ORIGIN), null, 2),
+          {
+            headers: {
+              "Content-Type": "application/ld+json; charset=utf-8",
+              "Cache-Control": "public, max-age=600",
+              "Access-Control-Allow-Origin": "*",
+            },
           },
-        });
+        );
       },
     },
   },

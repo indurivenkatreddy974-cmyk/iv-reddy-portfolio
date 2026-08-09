@@ -91,7 +91,10 @@ function OwnershipPage() {
   const info = chainInfo(settings?.chain_id);
 
   return (
-    <main className="min-h-screen px-5 sm:px-8 md:px-10 py-16 sm:py-24" style={{ background: "#0C0C0C" }}>
+    <main
+      className="min-h-screen px-5 sm:px-8 md:px-10 py-16 sm:py-24"
+      style={{ background: "#0C0C0C" }}
+    >
       <div className="max-w-6xl mx-auto">
         <div className="flex flex-wrap items-center justify-between gap-4 mb-10">
           <Link
@@ -109,7 +112,9 @@ function OwnershipPage() {
         >
           Digital Ownership
         </h1>
-        <p className="text-[#D7E2EA]/70 font-light leading-relaxed max-w-2xl mb-12">{DESCRIPTION}</p>
+        <p className="text-[#D7E2EA]/70 font-light leading-relaxed max-w-2xl mb-12">
+          {DESCRIPTION}
+        </p>
 
         {/* Summary */}
         <section aria-labelledby="summary-heading" className="mb-16">
@@ -132,7 +137,10 @@ function OwnershipPage() {
           >
             Blockchain status
           </h2>
-          <div className="rounded-3xl p-6 grid grid-cols-1 sm:grid-cols-2 gap-4 text-[11px]" style={CARD}>
+          <div
+            className="rounded-3xl p-6 grid grid-cols-1 sm:grid-cols-2 gap-4 text-[11px]"
+            style={CARD}
+          >
             <Field label="Network" value={info.label} />
             <Field
               label="Layer"
@@ -151,7 +159,11 @@ function OwnershipPage() {
             <Field
               label="Ownership contract (ERC-721)"
               value={settings?.nft_contract ?? "Not deployed"}
-              href={settings?.nft_contract ? addressUrl(settings.chain_id, settings.nft_contract) : undefined}
+              href={
+                settings?.nft_contract
+                  ? addressUrl(settings.chain_id, settings.nft_contract)
+                  : undefined
+              }
               mono
             />
           </div>
@@ -159,11 +171,16 @@ function OwnershipPage() {
 
         {/* Ownership tokens */}
         <section aria-labelledby="tokens-heading" className="mb-16">
-          <h2 id="tokens-heading" className="text-[11px] uppercase tracking-[0.3em] text-[#4a9eff] mb-4">
+          <h2
+            id="tokens-heading"
+            className="text-[11px] uppercase tracking-[0.3em] text-[#4a9eff] mb-4"
+          >
             ERC-721 ownership tokens
           </h2>
           {minted.length === 0 ? (
-            <p className="text-[#D7E2EA]/50 font-light text-sm">No projects have been minted yet.</p>
+            <p className="text-[#D7E2EA]/50 font-light text-sm">
+              No projects have been minted yet.
+            </p>
           ) : (
             <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 list-none p-0">
               {minted.map((t) => (
@@ -177,7 +194,9 @@ function OwnershipPage() {
                       {t.project_name}
                     </h3>
                     {t.description && (
-                      <p className="text-sm text-[#D7E2EA]/60 font-light line-clamp-3">{t.description}</p>
+                      <p className="text-sm text-[#D7E2EA]/60 font-light line-clamp-3">
+                        {t.description}
+                      </p>
                     )}
                     <dl className="grid grid-cols-1 gap-1.5 text-[11px] mt-1">
                       <Field label="Token ID" value={`#${t.token_id}`} mono />
@@ -211,7 +230,10 @@ function OwnershipPage() {
         {/* Verification history */}
         <section aria-labelledby="history-heading">
           <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-            <h2 id="history-heading" className="text-[11px] uppercase tracking-[0.3em] text-[#4a9eff]">
+            <h2
+              id="history-heading"
+              className="text-[11px] uppercase tracking-[0.3em] text-[#4a9eff]"
+            >
               Verification history
             </h2>
             <a
@@ -241,7 +263,10 @@ function OwnershipPage() {
                         {SUBJECT_LABELS[r.subject_type] ?? "Document"}
                       </div>
                       <div className="text-[#D7E2EA] text-sm font-medium truncate">{r.title}</div>
-                      <div className="font-mono text-[11px] text-[#D7E2EA]/50 truncate" title={r.sha256}>
+                      <div
+                        className="font-mono text-[11px] text-[#D7E2EA]/50 truncate"
+                        title={r.sha256}
+                      >
                         {shortHash(r.sha256, 18, 10)}
                       </div>
                     </div>

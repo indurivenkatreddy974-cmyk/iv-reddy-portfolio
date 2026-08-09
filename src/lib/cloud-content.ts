@@ -4,8 +4,23 @@ import { useContent, type ContentState } from "@/lib/content-store";
 import { useAdminAuth } from "@/lib/admin-auth";
 
 export type SaveStatus = "idle" | "dirty" | "saving" | "saved" | "error";
-type SyncedKey = "hero" | "about" | "contact" | "educations" | "internships" | "certifications" | "projects";
-const KEYS: SyncedKey[] = ["hero", "about", "contact", "educations", "internships", "certifications", "projects"];
+type SyncedKey =
+  | "hero"
+  | "about"
+  | "contact"
+  | "educations"
+  | "internships"
+  | "certifications"
+  | "projects";
+const KEYS: SyncedKey[] = [
+  "hero",
+  "about",
+  "contact",
+  "educations",
+  "internships",
+  "certifications",
+  "projects",
+];
 
 type CloudStatusState = {
   hydrated: boolean;
@@ -15,8 +30,14 @@ type CloudStatusState = {
   setHydrated: (v: boolean) => void;
 };
 
-const initial = <T,>(v: T): Record<SyncedKey, T> => ({
-  hero: v, about: v, contact: v, educations: v, internships: v, certifications: v, projects: v,
+const initial = <T>(v: T): Record<SyncedKey, T> => ({
+  hero: v,
+  about: v,
+  contact: v,
+  educations: v,
+  internships: v,
+  certifications: v,
+  projects: v,
 });
 
 export const useCloudStatus = create<CloudStatusState>((set) => ({
@@ -53,7 +74,10 @@ async function hydrate() {
           useContent.setState({ [k]: remote } as Partial<ContentState>);
           lastSerialized[k] = JSON.stringify(remote);
         } else if (typeof remote === "object") {
-          const merged = { ...(store[k] as object), ...(remote as object) } as ContentState[SyncedKey];
+          const merged = {
+            ...(store[k] as object),
+            ...(remote as object),
+          } as ContentState[SyncedKey];
           useContent.setState({ [k]: merged } as Partial<ContentState>);
           lastSerialized[k] = JSON.stringify(merged);
         }

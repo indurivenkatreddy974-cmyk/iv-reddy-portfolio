@@ -44,7 +44,11 @@ export function FeaturedWorkSection() {
   });
 
   const items = (data?.items ?? []) as Item[];
-  const settings = data?.settings ?? { layout: "grid", featured_projects_first: true, featured_certs_first: true };
+  const settings = data?.settings ?? {
+    layout: "grid",
+    featured_projects_first: true,
+    featured_certs_first: true,
+  };
   const featProjectsFirst = settings.featured_projects_first;
   const featCertsFirst = settings.featured_certs_first;
 
@@ -62,7 +66,10 @@ export function FeaturedWorkSection() {
       style={{ background: "#0C0C0C" }}
     >
       <FadeIn delay={0} y={40} className="text-center mb-12 md:mb-16">
-        <div className="text-xs sm:text-sm uppercase tracking-[0.4em] mb-4" style={{ color: "#4a9eff" }}>
+        <div
+          className="text-xs sm:text-sm uppercase tracking-[0.4em] mb-4"
+          style={{ color: "#4a9eff" }}
+        >
           Curated
         </div>
         <h2
@@ -87,7 +94,9 @@ export function FeaturedWorkSection() {
 
       {!isLoading && ordered.length === 0 && (
         <div className="text-center py-20">
-          <div className="text-xs uppercase tracking-[0.3em] text-[#D7E2EA]/40 mb-2">No items yet</div>
+          <div className="text-xs uppercase tracking-[0.3em] text-[#D7E2EA]/40 mb-2">
+            No items yet
+          </div>
           <p className="text-sm text-[#D7E2EA]/60">Add featured work from the Atelier.</p>
         </div>
       )}
@@ -173,7 +182,12 @@ function ShowcaseCard({ item, large = false }: { item: Item; large?: boolean }) 
     return (
       <>
         <VideoCard item={item} large={large} onPlay={() => setVideoOpen(true)} />
-        <VideoModal open={videoOpen} onClose={() => setVideoOpen(false)} url={item.media_url} title={item.title} />
+        <VideoModal
+          open={videoOpen}
+          onClose={() => setVideoOpen(false)}
+          url={item.media_url}
+          title={item.title}
+        />
       </>
     );
   }
@@ -182,7 +196,15 @@ function ShowcaseCard({ item, large = false }: { item: Item; large?: boolean }) 
   return <ProjectCard item={item} large={large} />;
 }
 
-function CardShell({ children, large, className = "" }: { children: React.ReactNode; large?: boolean; className?: string }) {
+function CardShell({
+  children,
+  large,
+  className = "",
+}: {
+  children: React.ReactNode;
+  large?: boolean;
+  className?: string;
+}) {
   return (
     <motion.div
       whileHover={{ y: -6 }}
@@ -197,7 +219,9 @@ function CardShell({ children, large, className = "" }: { children: React.ReactN
     >
       <div
         className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-        style={{ boxShadow: "inset 0 0 60px rgba(74,158,255,0.15), 0 0 80px -10px rgba(74,158,255,0.4)" }}
+        style={{
+          boxShadow: "inset 0 0 60px rgba(74,158,255,0.15), 0 0 80px -10px rgba(74,158,255,0.4)",
+        }}
       />
       {children}
     </motion.div>
@@ -219,23 +243,34 @@ function ProjectCard({ item, large }: { item: Item; large?: boolean }) {
           />
           <div className="absolute inset-0 bg-gradient-to-t from-[#0C0C0C] via-transparent to-transparent opacity-80" />
           {item.featured && (
-            <span className="absolute top-4 left-4 text-[10px] uppercase tracking-[0.3em] px-3 py-1 rounded-full text-white" style={{ background: "linear-gradient(135deg, #4a9eff, #7621B0)" }}>
+            <span
+              className="absolute top-4 left-4 text-[10px] uppercase tracking-[0.3em] px-3 py-1 rounded-full text-white"
+              style={{ background: "linear-gradient(135deg, #4a9eff, #7621B0)" }}
+            >
               Featured
             </span>
           )}
         </div>
       )}
       <div className="p-6 flex flex-col gap-3">
-        <h3 className="font-semibold leading-tight" style={{ color: "#D7E2EA", fontSize: large ? "clamp(1.4rem, 2.5vw, 2rem)" : "1.2rem" }}>
+        <h3
+          className="font-semibold leading-tight"
+          style={{ color: "#D7E2EA", fontSize: large ? "clamp(1.4rem, 2.5vw, 2rem)" : "1.2rem" }}
+        >
           {item.title}
         </h3>
         {item.description && (
-          <p className="text-sm leading-relaxed text-[#D7E2EA]/65 line-clamp-3">{item.description}</p>
+          <p className="text-sm leading-relaxed text-[#D7E2EA]/65 line-clamp-3">
+            {item.description}
+          </p>
         )}
         {item.tech.length > 0 && (
           <div className="flex flex-wrap gap-1.5 mt-1">
             {item.tech.map((t) => (
-              <span key={t} className="text-[10px] uppercase tracking-widest px-2 py-1 rounded-full border border-[#D7E2EA]/15 text-[#D7E2EA]/60">
+              <span
+                key={t}
+                className="text-[10px] uppercase tracking-widest px-2 py-1 rounded-full border border-[#D7E2EA]/15 text-[#D7E2EA]/60"
+              >
                 {t}
               </span>
             ))}
@@ -243,12 +278,23 @@ function ProjectCard({ item, large }: { item: Item; large?: boolean }) {
         )}
         <div className="flex items-center gap-3 mt-3">
           {item.live_url && (
-            <a href={item.live_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-xs uppercase tracking-widest px-4 py-2 rounded-full text-white" style={{ background: "linear-gradient(135deg, #4a9eff, #7621B0)" }}>
+            <a
+              href={item.live_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 text-xs uppercase tracking-widest px-4 py-2 rounded-full text-white"
+              style={{ background: "linear-gradient(135deg, #4a9eff, #7621B0)" }}
+            >
               <ExternalLink className="w-3.5 h-3.5" /> Live
             </a>
           )}
           {item.github_url && (
-            <a href={item.github_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-xs uppercase tracking-widest px-4 py-2 rounded-full text-[#D7E2EA] border border-[#D7E2EA]/15 hover:border-[#D7E2EA]/40 transition">
+            <a
+              href={item.github_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 text-xs uppercase tracking-widest px-4 py-2 rounded-full text-[#D7E2EA] border border-[#D7E2EA]/15 hover:border-[#D7E2EA]/40 transition"
+            >
               <Github className="w-3.5 h-3.5" /> Code
             </a>
           )}
@@ -262,23 +308,48 @@ function CertCard({ item, large }: { item: Item; large?: boolean }) {
   return (
     <CardShell large={large} className="cert-card">
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute -top-1/2 -left-1/2 w-[200%] h-[200%] opacity-0 group-hover:opacity-100 transition-opacity duration-700"
-          style={{ background: "linear-gradient(115deg, transparent 40%, rgba(215,226,234,0.08) 50%, transparent 60%)", animation: "shineSweep 1.5s ease-in-out" }} />
+        <div
+          className="absolute -top-1/2 -left-1/2 w-[200%] h-[200%] opacity-0 group-hover:opacity-100 transition-opacity duration-700"
+          style={{
+            background:
+              "linear-gradient(115deg, transparent 40%, rgba(215,226,234,0.08) 50%, transparent 60%)",
+            animation: "shineSweep 1.5s ease-in-out",
+          }}
+        />
       </div>
       {item.thumbnail_url && (
         <div className="relative overflow-hidden" style={{ aspectRatio: "16/10" }}>
-          <img src={item.thumbnail_url} alt={item.title} loading="lazy" className="w-full h-full object-cover" />
+          <img
+            src={item.thumbnail_url}
+            alt={item.title}
+            loading="lazy"
+            className="w-full h-full object-cover"
+          />
         </div>
       )}
       <div className="p-6 flex flex-col gap-2">
         <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.3em] text-[#4a9eff]">
           <Award className="w-3 h-3" /> Certification
         </div>
-        <h3 className="font-semibold leading-tight text-[#D7E2EA]" style={{ fontSize: large ? "1.6rem" : "1.15rem" }}>{item.title}</h3>
+        <h3
+          className="font-semibold leading-tight text-[#D7E2EA]"
+          style={{ fontSize: large ? "1.6rem" : "1.15rem" }}
+        >
+          {item.title}
+        </h3>
         {item.issuer && <div className="text-sm text-[#D7E2EA]/65">{item.issuer}</div>}
-        {item.issue_date && <div className="text-xs text-[#D7E2EA]/40 uppercase tracking-widest">{item.issue_date}</div>}
+        {item.issue_date && (
+          <div className="text-xs text-[#D7E2EA]/40 uppercase tracking-widest">
+            {item.issue_date}
+          </div>
+        )}
         {item.verify_url && (
-          <a href={item.verify_url} target="_blank" rel="noopener noreferrer" className="self-start mt-3 flex items-center gap-1.5 text-xs uppercase tracking-widest px-4 py-2 rounded-full text-[#D7E2EA] border border-[#D7E2EA]/15 hover:border-[#4a9eff]/50 transition">
+          <a
+            href={item.verify_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="self-start mt-3 flex items-center gap-1.5 text-xs uppercase tracking-widest px-4 py-2 rounded-full text-[#D7E2EA] border border-[#D7E2EA]/15 hover:border-[#4a9eff]/50 transition"
+          >
             <ExternalLink className="w-3.5 h-3.5" /> Verify
           </a>
         )}
@@ -292,15 +363,29 @@ function AchievementCard({ item, large }: { item: Item; large?: boolean }) {
     <CardShell large={large}>
       {item.thumbnail_url && (
         <div className="relative overflow-hidden" style={{ aspectRatio: "16/10" }}>
-          <motion.img src={item.thumbnail_url} alt={item.title} loading="lazy" className="w-full h-full object-cover" whileHover={{ scale: 1.05 }} transition={{ duration: 0.5 }} />
+          <motion.img
+            src={item.thumbnail_url}
+            alt={item.title}
+            loading="lazy"
+            className="w-full h-full object-cover"
+            whileHover={{ scale: 1.05 }}
+            transition={{ duration: 0.5 }}
+          />
         </div>
       )}
       <div className="p-6 flex flex-col gap-2">
         <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.3em] text-[#4a9eff]">
           <Trophy className="w-3 h-3" /> Achievement
         </div>
-        <h3 className="font-semibold leading-tight text-[#D7E2EA]" style={{ fontSize: large ? "1.6rem" : "1.15rem" }}>{item.title}</h3>
-        {item.description && <p className="text-sm leading-relaxed text-[#D7E2EA]/65">{item.description}</p>}
+        <h3
+          className="font-semibold leading-tight text-[#D7E2EA]"
+          style={{ fontSize: large ? "1.6rem" : "1.15rem" }}
+        >
+          {item.title}
+        </h3>
+        {item.description && (
+          <p className="text-sm leading-relaxed text-[#D7E2EA]/65">{item.description}</p>
+        )}
       </div>
     </CardShell>
   );
@@ -310,27 +395,64 @@ function VideoCard({ item, large, onPlay }: { item: Item; large?: boolean; onPla
   const poster = item.poster_url ?? item.thumbnail_url;
   return (
     <CardShell large={large}>
-      <button onClick={onPlay} className="relative w-full block overflow-hidden text-left" style={{ aspectRatio: large ? "21/9" : "16/10" }}>
+      <button
+        onClick={onPlay}
+        className="relative w-full block overflow-hidden text-left"
+        style={{ aspectRatio: large ? "21/9" : "16/10" }}
+      >
         {poster ? (
-          <motion.img src={poster} alt={item.title} loading="lazy" className="w-full h-full object-cover" whileHover={{ scale: 1.06 }} transition={{ duration: 0.5 }} />
+          <motion.img
+            src={poster}
+            alt={item.title}
+            loading="lazy"
+            className="w-full h-full object-cover"
+            whileHover={{ scale: 1.06 }}
+            transition={{ duration: 0.5 }}
+          />
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-[#1a1a2e] to-[#0C0C0C]" />
         )}
         <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-          <motion.div whileHover={{ scale: 1.15 }} className="w-16 h-16 rounded-full flex items-center justify-center" style={{ background: "linear-gradient(135deg, #4a9eff, #7621B0)", boxShadow: "0 10px 40px rgba(74,158,255,0.5)" }}>
+          <motion.div
+            whileHover={{ scale: 1.15 }}
+            className="w-16 h-16 rounded-full flex items-center justify-center"
+            style={{
+              background: "linear-gradient(135deg, #4a9eff, #7621B0)",
+              boxShadow: "0 10px 40px rgba(74,158,255,0.5)",
+            }}
+          >
             <Play className="w-6 h-6 text-white ml-0.5" fill="white" />
           </motion.div>
         </div>
       </button>
       <div className="p-6 flex flex-col gap-2">
-        <h3 className="font-semibold leading-tight text-[#D7E2EA]" style={{ fontSize: large ? "1.6rem" : "1.15rem" }}>{item.title}</h3>
-        {item.description && <p className="text-sm leading-relaxed text-[#D7E2EA]/65 line-clamp-2">{item.description}</p>}
+        <h3
+          className="font-semibold leading-tight text-[#D7E2EA]"
+          style={{ fontSize: large ? "1.6rem" : "1.15rem" }}
+        >
+          {item.title}
+        </h3>
+        {item.description && (
+          <p className="text-sm leading-relaxed text-[#D7E2EA]/65 line-clamp-2">
+            {item.description}
+          </p>
+        )}
       </div>
     </CardShell>
   );
 }
 
-function VideoModal({ open, onClose, url, title }: { open: boolean; onClose: () => void; url: string | null; title: string }) {
+function VideoModal({
+  open,
+  onClose,
+  url,
+  title,
+}: {
+  open: boolean;
+  onClose: () => void;
+  url: string | null;
+  title: string;
+}) {
   const videoRef = useRef<HTMLVideoElement>(null);
   useEffect(() => {
     if (open && videoRef.current) videoRef.current.play().catch(() => {});
@@ -338,14 +460,39 @@ function VideoModal({ open, onClose, url, title }: { open: boolean; onClose: () 
   return (
     <AnimatePresence>
       {open && url && (
-        <motion.div className="fixed inset-0 z-[200] flex items-center justify-center p-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-          <div className="absolute inset-0" style={{ background: "rgba(0,0,0,0.92)", backdropFilter: "blur(20px)" }} onClick={onClose} />
-          <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="relative w-full max-w-5xl rounded-2xl overflow-hidden" style={{ border: "1px solid rgba(74,158,255,0.3)" }}>
+        <motion.div
+          className="fixed inset-0 z-[200] flex items-center justify-center p-4"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+        >
+          <div
+            className="absolute inset-0"
+            style={{ background: "rgba(0,0,0,0.92)", backdropFilter: "blur(20px)" }}
+            onClick={onClose}
+          />
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.95, opacity: 0 }}
+            className="relative w-full max-w-5xl rounded-2xl overflow-hidden"
+            style={{ border: "1px solid rgba(74,158,255,0.3)" }}
+          >
             <video ref={videoRef} src={url} controls className="w-full h-auto" />
-            <button type="button" aria-label="Close video" onClick={onClose} className="absolute top-3 right-3 w-9 h-9 rounded-full flex items-center justify-center bg-black/60 text-white hover:bg-black/80">
+            <button
+              type="button"
+              aria-label="Close video"
+              onClick={onClose}
+              className="absolute top-3 right-3 w-9 h-9 rounded-full flex items-center justify-center bg-black/60 text-white hover:bg-black/80"
+            >
               <X className="w-4 h-4" />
             </button>
-            <button type="button" aria-label="Enter fullscreen" onClick={() => videoRef.current?.requestFullscreen()} className="absolute top-3 right-14 w-9 h-9 rounded-full flex items-center justify-center bg-black/60 text-white hover:bg-black/80">
+            <button
+              type="button"
+              aria-label="Enter fullscreen"
+              onClick={() => videoRef.current?.requestFullscreen()}
+              className="absolute top-3 right-14 w-9 h-9 rounded-full flex items-center justify-center bg-black/60 text-white hover:bg-black/80"
+            >
               <Maximize2 className="w-4 h-4" />
             </button>
             <div className="absolute bottom-3 left-4 text-sm text-white/80">{title}</div>

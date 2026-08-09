@@ -5,12 +5,7 @@ import { Send } from "lucide-react";
 
 type Msg = { id: string; role: "bot" | "user"; text: string };
 
-const PLACEHOLDERS = [
-  "Ask anything…",
-  "Try: Projects",
-  "Try: Resume",
-  "Try: Contact",
-];
+const PLACEHOLDERS = ["Ask anything…", "Try: Projects", "Try: Resume", "Try: Contact"];
 
 const QUICK_CHIPS = [
   { label: "Projects", href: "#projects" },
@@ -113,11 +108,16 @@ export function ChatPanel({
         return;
       }
       const lower = text.toLowerCase();
-      let reply = "I'll get back to you shortly. Meanwhile, explore Projects, Experience, or Contact.";
-      if (lower.includes("project")) reply = "Check the Projects section — scroll down or tap a chip below.";
-      else if (lower.includes("resume")) reply = "Reach out via the Contact section to grab the latest resume.";
-      else if (lower.includes("contact") || lower.includes("email")) reply = "You can email IV directly from the Contact section.";
-      else if (lower.includes("experience") || lower.includes("intern")) reply = "Internships are detailed in the Experience section.";
+      let reply =
+        "I'll get back to you shortly. Meanwhile, explore Projects, Experience, or Contact.";
+      if (lower.includes("project"))
+        reply = "Check the Projects section — scroll down or tap a chip below.";
+      else if (lower.includes("resume"))
+        reply = "Reach out via the Contact section to grab the latest resume.";
+      else if (lower.includes("contact") || lower.includes("email"))
+        reply = "You can email IV directly from the Contact section.";
+      else if (lower.includes("experience") || lower.includes("intern"))
+        reply = "Internships are detailed in the Experience section.";
       setMessages((m) => [...m, { id: Math.random().toString(36), role: "bot", text: reply }]);
     }, 350);
   };
@@ -156,8 +156,14 @@ export function ChatPanel({
           {/* header */}
           <div className="px-5 py-4 border-b" style={{ borderColor: "rgba(215,226,234,0.08)" }}>
             <div className="flex items-center gap-3">
-              <span className="w-2 h-2 rounded-full" style={{ background: "#4a9eff", boxShadow: "0 0 10px #4a9eff" }} aria-hidden />
-              <div className="text-xs uppercase tracking-[0.3em] text-[#D7E2EA]/80">IV · Assistant</div>
+              <span
+                className="w-2 h-2 rounded-full"
+                style={{ background: "#4a9eff", boxShadow: "0 0 10px #4a9eff" }}
+                aria-hidden
+              />
+              <div className="text-xs uppercase tracking-[0.3em] text-[#D7E2EA]/80">
+                IV · Assistant
+              </div>
             </div>
           </div>
 
@@ -167,7 +173,13 @@ export function ChatPanel({
           </div>
 
           {/* messages */}
-          <div ref={scrollRef} role="log" aria-label="Chat messages" aria-live="polite" className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-3">
+          <div
+            ref={scrollRef}
+            role="log"
+            aria-label="Chat messages"
+            aria-live="polite"
+            className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-3"
+          >
             {messages.map((m) => (
               <motion.div
                 key={m.id}

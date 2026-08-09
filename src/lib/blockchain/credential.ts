@@ -19,7 +19,10 @@ export function credentialUrl(recordId: string, origin: string = SITE_ORIGIN) {
   return `${origin}/api/public/credential/${recordId}`;
 }
 
-export function verifyPageUrl(record?: Pick<PublicRecord, "sha256"> | null, origin: string = SITE_ORIGIN) {
+export function verifyPageUrl(
+  record?: Pick<PublicRecord, "sha256"> | null,
+  origin: string = SITE_ORIGIN,
+) {
   return record ? `${origin}/verify#${record.sha256}` : `${origin}/verify`;
 }
 
@@ -84,12 +87,18 @@ export function buildCredentialSchema(record: PublicRecord, origin: string = SIT
     additionalType: SUBJECT_LABELS[record.subject_type] ?? "Document",
     identifier: [
       { "@type": "PropertyValue", name: "SHA-256", value: record.sha256 },
-      ...(record.ipfs_cid ? [{ "@type": "PropertyValue", name: "IPFS CID", value: record.ipfs_cid }] : []),
+      ...(record.ipfs_cid
+        ? [{ "@type": "PropertyValue", name: "IPFS CID", value: record.ipfs_cid }]
+        : []),
       ...(record.tx_hash
         ? [{ "@type": "PropertyValue", name: `${info.label} transaction`, value: record.tx_hash }]
         : []),
     ],
-    subjectOf: { "@type": "WebPage", url: credentialUrl(record.id, origin), encodingFormat: "application/ld+json" },
+    subjectOf: {
+      "@type": "WebPage",
+      url: credentialUrl(record.id, origin),
+      encodingFormat: "application/ld+json",
+    },
   };
 }
 
@@ -186,7 +195,13 @@ export function buildTokenSchema(token: PublicToken, origin: string = SITE_ORIGI
         ? [{ "@type": "PropertyValue", name: "ERC-721 Token ID", value: token.token_id }]
         : []),
       ...(token.contract_address
-        ? [{ "@type": "PropertyValue", name: `${info.label} contract`, value: token.contract_address }]
+        ? [
+            {
+              "@type": "PropertyValue",
+              name: `${info.label} contract`,
+              value: token.contract_address,
+            },
+          ]
         : []),
       ...(token.metadata_cid
         ? [{ "@type": "PropertyValue", name: "Metadata CID", value: token.metadata_cid }]
@@ -228,7 +243,12 @@ export function buildOwnershipPageGraph(
         "@type": "BreadcrumbList",
         itemListElement: [
           { "@type": "ListItem", position: 1, name: "Home", item: `${origin}/` },
-          { "@type": "ListItem", position: 2, name: "Digital Ownership", item: `${origin}/ownership` },
+          {
+            "@type": "ListItem",
+            position: 2,
+            name: "Digital Ownership",
+            item: `${origin}/ownership`,
+          },
         ],
       },
     ],

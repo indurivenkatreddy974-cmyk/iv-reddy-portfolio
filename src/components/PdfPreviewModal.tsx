@@ -48,7 +48,6 @@ export function PdfPreviewModal({ open, url, title, onClose }: PdfPreviewModalPr
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
-
   const wrapRef = useRef<HTMLDivElement>(null);
   const viewportRef = useRef<HTMLDivElement>(null);
   const closeBtnRef = useRef<HTMLButtonElement>(null);
@@ -113,8 +112,7 @@ export function PdfPreviewModal({ open, url, title, onClose }: PdfPreviewModalPr
       if (documentKind !== "pdf") return;
       if (e.key === "ArrowRight" || e.key === "PageDown")
         setPageNumber((p) => Math.min(numPages || p + 1, p + 1));
-      if (e.key === "ArrowLeft" || e.key === "PageUp")
-        setPageNumber((p) => Math.max(1, p - 1));
+      if (e.key === "ArrowLeft" || e.key === "PageUp") setPageNumber((p) => Math.max(1, p - 1));
       if (e.key === "+" || e.key === "=") {
         setFit("custom");
         setZoom((z) => Math.min(3, +(z + 0.2).toFixed(2)));
@@ -228,15 +226,29 @@ export function PdfPreviewModal({ open, url, title, onClose }: PdfPreviewModalPr
                 setLoadError("Failed to render document. It may be missing or unsupported.");
               }}
               loadingNode={<LoadingState label="Loading document…" />}
-              errorNode={<FallbackState message="Failed to render document" url={normalizedUrl} title={title} />}
-              noDataNode={<FallbackState message="Document unavailable" url={normalizedUrl} title={title} />}
+              errorNode={
+                <FallbackState
+                  message="Failed to render document"
+                  url={normalizedUrl}
+                  title={title}
+                />
+              }
+              noDataNode={
+                <FallbackState message="Document unavailable" url={normalizedUrl} title={title} />
+              }
             />
           </Suspense>
         </div>
       );
     }
 
-    return <FallbackState message="Preview not available for this file" url={normalizedUrl} title={title} />;
+    return (
+      <FallbackState
+        message="Preview not available for this file"
+        url={normalizedUrl}
+        title={title}
+      />
+    );
   };
 
   return (
@@ -297,8 +309,8 @@ export function PdfPreviewModal({ open, url, title, onClose }: PdfPreviewModalPr
                     {fit === "width"
                       ? "Fit W"
                       : fit === "page"
-                      ? "Fit P"
-                      : `${Math.round(zoom * 100)}%`}
+                        ? "Fit P"
+                        : `${Math.round(zoom * 100)}%`}
                   </div>
                   <ToolbarBtn
                     onClick={() => {
@@ -355,8 +367,16 @@ export function PdfPreviewModal({ open, url, title, onClose }: PdfPreviewModalPr
                 )}
               </div>
 
-              <ToolbarBtn onClick={toggleFullscreen} ariaLabel="Toggle fullscreen" className="hidden sm:flex">
-                {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+              <ToolbarBtn
+                onClick={toggleFullscreen}
+                ariaLabel="Toggle fullscreen"
+                className="hidden sm:flex"
+              >
+                {isFullscreen ? (
+                  <Minimize2 className="w-4 h-4" />
+                ) : (
+                  <Maximize2 className="w-4 h-4" />
+                )}
               </ToolbarBtn>
               <a
                 href={normalizedUrl || "#"}
@@ -430,7 +450,9 @@ function ToolbarBtn({
 
 function LoadingState({ label, compact = false }: { label: string; compact?: boolean }) {
   return (
-    <div className={`w-full flex items-center justify-center text-[#D7E2EA]/60 ${compact ? "py-24" : "h-full py-24"}`}>
+    <div
+      className={`w-full flex items-center justify-center text-[#D7E2EA]/60 ${compact ? "py-24" : "h-full py-24"}`}
+    >
       <div className="flex items-center gap-3 text-sm">
         <Loader2 className="w-4 h-4 animate-spin" />
         <span>{label}</span>

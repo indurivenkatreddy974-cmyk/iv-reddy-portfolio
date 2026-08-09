@@ -4,6 +4,6 @@ import type { AccessLogEntry } from "./admin-auth";
 export async function notifyAdminAccess(entry: AccessLogEntry): Promise<void> {
   if (typeof window === "undefined") return;
   // No-op stub. Logged for visibility in dev.
-  // eslint-disable-next-line no-console
+
   console.info("[admin-access]", entry);
 }

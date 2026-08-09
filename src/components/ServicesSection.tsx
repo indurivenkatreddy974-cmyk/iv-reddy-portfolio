@@ -50,7 +50,10 @@ export function ServicesSection() {
           <FadeIn key={s.n} delay={i * 0.1} y={30}>
             <div
               className="flex flex-col sm:flex-row sm:items-start gap-4 sm:gap-8 md:gap-12 py-8 sm:py-10 md:py-12"
-              style={{ borderTop: i === 0 ? "1px solid rgba(12,12,12,0.15)" : "none", borderBottom: "1px solid rgba(12,12,12,0.15)" }}
+              style={{
+                borderTop: i === 0 ? "1px solid rgba(12,12,12,0.15)" : "none",
+                borderBottom: "1px solid rgba(12,12,12,0.15)",
+              }}
             >
               <div
                 className="font-black shrink-0"

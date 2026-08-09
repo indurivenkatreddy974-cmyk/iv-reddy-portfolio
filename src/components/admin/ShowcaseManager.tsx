@@ -320,7 +320,6 @@ function SortableRow({
       style={style}
       {...attributes}
       className="flex items-center gap-3 p-3 rounded-2xl"
-      // eslint-disable-next-line react/forbid-dom-props
       data-row
     >
       <div

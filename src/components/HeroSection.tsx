@@ -27,7 +27,10 @@ export function HeroSection() {
 
       <FadeIn delay={0.1} y={-10} className="relative z-20 mt-8 sm:mt-10">
         <div className="flex items-center gap-3 text-[10px] sm:text-xs md:text-sm tracking-[0.4em] text-[#D7E2EA]/70 uppercase">
-          <span className="inline-block w-2 h-2 rounded-full" style={{ background: "#4a9eff", boxShadow: "0 0 12px #4a9eff" }} />
+          <span
+            className="inline-block w-2 h-2 rounded-full"
+            style={{ background: "#4a9eff", boxShadow: "0 0 12px #4a9eff" }}
+          />
           {hero.roleLabel}
           <span className="hidden sm:inline opacity-40">— {hero.name}</span>
         </div>
@@ -63,7 +66,6 @@ export function HeroSection() {
               width={1024}
               height={1280}
             />
-
           </div>
         </FadeIn>
       </Magnet>
@@ -80,9 +82,15 @@ export function HeroSection() {
 
         <FadeIn delay={0.5} y={20}>
           <div className="flex flex-wrap items-center gap-3">
-            <CtaButton href={hero.cta1.href} size="sm">{hero.cta1.label}</CtaButton>
-            <CtaButton href={hero.cta2.href} variant="ghost" size="sm">{hero.cta2.label}</CtaButton>
-            <CtaButton href={media.resumeUrl || hero.cta3.href} variant="ghost" size="sm">{hero.cta3.label}</CtaButton>
+            <CtaButton href={hero.cta1.href} size="sm">
+              {hero.cta1.label}
+            </CtaButton>
+            <CtaButton href={hero.cta2.href} variant="ghost" size="sm">
+              {hero.cta2.label}
+            </CtaButton>
+            <CtaButton href={media.resumeUrl || hero.cta3.href} variant="ghost" size="sm">
+              {hero.cta3.label}
+            </CtaButton>
             <VerifiedBadge record={resumeRecord} onOpen={setProof} />
           </div>
         </FadeIn>

@@ -20,7 +20,14 @@ export const Route = createFileRoute("/api/public/m/$")({
           headers: request.headers.get("range") ? { range: request.headers.get("range")! } : {},
         });
         const headers = new Headers();
-        const passthrough = ["content-type", "content-length", "content-range", "accept-ranges", "last-modified", "etag"];
+        const passthrough = [
+          "content-type",
+          "content-length",
+          "content-range",
+          "accept-ranges",
+          "last-modified",
+          "etag",
+        ];
         for (const h of passthrough) {
           const v = upstream.headers.get(h);
           if (v) headers.set(h, v);
@@ -31,7 +38,10 @@ export const Route = createFileRoute("/api/public/m/$")({
             `attachment; filename="${downloadName.replace(/[\r\n"]/g, "_")}"`,
           );
         }
-        headers.set("cache-control", downloadName ? "public, max-age=3600, immutable" : "public, max-age=300");
+        headers.set(
+          "cache-control",
+          downloadName ? "public, max-age=3600, immutable" : "public, max-age=300",
+        );
         return new Response(upstream.body, { status: upstream.status, headers });
       },
     },

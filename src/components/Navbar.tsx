@@ -90,8 +90,7 @@ export function Navbar() {
                   <span
                     className="pointer-events-none absolute left-3 right-3 lg:left-4 lg:right-4 bottom-1 h-px origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300 ease-out"
                     style={{
-                      background:
-                        "linear-gradient(90deg, transparent, #60A5FA, transparent)",
+                      background: "linear-gradient(90deg, transparent, #60A5FA, transparent)",
                       boxShadow: "0 0 8px rgba(96,165,250,0.6)",
                       transform: active === item ? "scaleX(1)" : undefined,
                     }}

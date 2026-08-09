@@ -3,13 +3,7 @@
  * Reads secrets from process.env at CALL TIME (never at module scope).
  * This file must never be imported from client-reachable module scope.
  */
-import {
-  createPublicClient,
-  createWalletClient,
-  defineChain,
-  http,
-  type Hex,
-} from "viem";
+import { createPublicClient, createWalletClient, defineChain, http, type Hex } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { CHAINS, DEFAULT_CHAIN_ID, chainInfo } from "./chains";
 import { VERIFICATION_ABI, OWNERSHIP_ABI } from "./artifacts";
@@ -83,7 +77,11 @@ export async function pinFile(
 ): Promise<{ cid: string; size: number }> {
   const { pinataJwt } = readEnv();
   const form = new FormData();
-  form.append("file", new Blob([bytes as unknown as BlobPart], { type: mime || "application/octet-stream" }), fileName);
+  form.append(
+    "file",
+    new Blob([bytes as unknown as BlobPart], { type: mime || "application/octet-stream" }),
+    fileName,
+  );
   form.append("pinataMetadata", JSON.stringify({ name: fileName }));
   const res = await fetch(PINATA_FILE_URL, {
     method: "POST",

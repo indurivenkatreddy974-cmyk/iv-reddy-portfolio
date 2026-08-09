@@ -36,7 +36,10 @@ export function normalizeExternalUrl(raw?: string | null): string | null {
   if (!value) return null;
 
   try {
-    const url = new URL(value, typeof window !== "undefined" ? window.location.origin : "http://localhost");
+    const url = new URL(
+      value,
+      typeof window !== "undefined" ? window.location.origin : "http://localhost",
+    );
     if (url.protocol !== "http:" && url.protocol !== "https:") return null;
     return url.toString();
   } catch {
@@ -45,12 +48,14 @@ export function normalizeExternalUrl(raw?: string | null): string | null {
 }
 
 function slugify(value: string) {
-  return value
-    .trim()
-    .replace(/[^\w\s.-]+/g, "")
-    .replace(/\s+/g, "_")
-    .replace(/_+/g, "_")
-    .replace(/^[_-]+|[_-]+$/g, "") || "document";
+  return (
+    value
+      .trim()
+      .replace(/[^\w\s.-]+/g, "")
+      .replace(/\s+/g, "_")
+      .replace(/_+/g, "_")
+      .replace(/^[_-]+|[_-]+$/g, "") || "document"
+  );
 }
 
 export function getDocumentFilename(rawUrl?: string | null, title?: string) {

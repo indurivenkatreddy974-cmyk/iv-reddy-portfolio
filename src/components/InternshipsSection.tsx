@@ -17,7 +17,11 @@ export function InternshipsSection() {
   const { byRef } = useVerification();
 
   return (
-    <section id="internships" className="px-5 sm:px-8 md:px-10 py-24 sm:py-32 relative" style={{ background: "#0C0C0C" }}>
+    <section
+      id="internships"
+      className="px-5 sm:px-8 md:px-10 py-24 sm:py-32 relative"
+      style={{ background: "#0C0C0C" }}
+    >
       <FadeIn delay={0} y={40} className="text-center mb-6">
         <h2
           className="hero-heading font-black uppercase leading-none tracking-tight"
@@ -28,12 +32,18 @@ export function InternshipsSection() {
       </FadeIn>
 
       <FadeIn delay={0.15} y={20} className="text-center max-w-2xl mx-auto mb-16 md:mb-20">
-        <p className="text-[#D7E2EA]/70 font-light leading-relaxed" style={{ fontSize: "clamp(0.95rem, 1.4vw, 1.15rem)" }}>
-          Learning through practical exposure, applied research, and real-world industry workflows while strengthening technical and problem-solving skills.
+        <p
+          className="text-[#D7E2EA]/70 font-light leading-relaxed"
+          style={{ fontSize: "clamp(0.95rem, 1.4vw, 1.15rem)" }}
+        >
+          Learning through practical exposure, applied research, and real-world industry workflows
+          while strengthening technical and problem-solving skills.
         </p>
       </FadeIn>
 
-      <div className={`grid gap-6 md:gap-8 max-w-6xl mx-auto ${internships.length === 1 ? "grid-cols-1" : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3"}`}>
+      <div
+        className={`grid gap-6 md:gap-8 max-w-6xl mx-auto ${internships.length === 1 ? "grid-cols-1" : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3"}`}
+      >
         {internships.map((item, i) => (
           <FadeIn key={item.id} delay={i * 0.15} y={40}>
             <InternshipCard
@@ -88,7 +98,10 @@ function InternshipCard({
           )}
         </div>
         <div className="flex-1 min-w-0">
-          <span className="text-[10px] tracking-[0.4em] uppercase block" style={{ color: "#4a9eff" }}>
+          <span
+            className="text-[10px] tracking-[0.4em] uppercase block"
+            style={{ color: "#4a9eff" }}
+          >
             {item.duration}
           </span>
           <h3 className="font-medium uppercase tracking-wide text-[#D7E2EA] text-lg md:text-xl mt-1">
@@ -137,7 +150,12 @@ function InternshipCard({
               <Eye className="w-3.5 h-3.5" /> View Certificate
             </button>
             <button
-              onClick={() => void triggerDocumentDownload(certificateUrl, `${item.company} Completion Certificate`)}
+              onClick={() =>
+                void triggerDocumentDownload(
+                  certificateUrl,
+                  `${item.company} Completion Certificate`,
+                )
+              }
               className="flex items-center gap-2 text-[11px] uppercase tracking-widest px-4 py-2.5 rounded-full border border-[#D7E2EA]/20 text-[#D7E2EA]/85 hover:text-white hover:border-[#4a9eff]/50 transition"
             >
               <Download className="w-3.5 h-3.5" /> Download Certificate
@@ -153,7 +171,9 @@ function InternshipCard({
               <FileSignature className="w-3.5 h-3.5" /> View Offer Letter
             </button>
             <button
-              onClick={() => void triggerDocumentDownload(offerLetterUrl, `${item.company} Offer Letter`)}
+              onClick={() =>
+                void triggerDocumentDownload(offerLetterUrl, `${item.company} Offer Letter`)
+              }
               className="flex items-center gap-2 text-[11px] uppercase tracking-widest px-4 py-2.5 rounded-full border border-[#D7E2EA]/20 text-[#D7E2EA]/85 hover:text-white hover:border-[#4a9eff]/50 transition"
             >
               <Download className="w-3.5 h-3.5" /> Download Offer Letter
