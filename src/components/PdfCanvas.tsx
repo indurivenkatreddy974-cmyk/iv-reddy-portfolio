@@ -6,6 +6,18 @@ import "react-pdf/dist/Page/TextLayer.css";
 
 if (typeof window !== "undefined") {
   pdfjs.GlobalWorkerOptions.workerSrc = pdfjsWorker;
+
+  // pdf.js rejects its in-flight fetch with an AbortError when a <Document>
+  // unmounts mid-load (closing the preview, scrolling a thumbnail out of view).
+  // That cancellation is expected and already handled by react-pdf, but the
+  // worker's internal promise surfaces as an unhandled rejection. Acknowledge
+  // only that exact case; every other rejection still propagates.
+  window.addEventListener("unhandledrejection", (event) => {
+    const reason = event.reason as { name?: string; message?: string } | undefined;
+    const isAbort =
+      reason?.name === "AbortError" || /BodyStreamBuffer was aborted/i.test(reason?.message ?? "");
+    if (isAbort) event.preventDefault();
+  });
 }
 
 type PdfCanvasProps = {
