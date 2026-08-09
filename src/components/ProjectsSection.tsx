@@ -110,17 +110,19 @@ function ProjectCard({
 
           <div className="grid grid-cols-1 sm:grid-cols-5 gap-3 sm:gap-4 md:gap-5">
             <div className="sm:col-span-2 flex flex-col gap-3 sm:gap-4 md:gap-5">
-              <img
-                src={project.imgs[0]}
-                alt={`${project.name} — preview 1`}
-                className="w-full rounded-[40px] sm:rounded-[50px] md:rounded-[60px] object-cover"
-                style={{ height: "clamp(130px, 16vw, 230px)" }}
-                loading="lazy"
-              />
+              {project.imgs[0] && (
+                <img
+                  src={project.imgs[0]}
+                  alt={`${project.name} — preview 1`}
+                  className="w-full rounded-[40px] sm:rounded-[50px] md:rounded-[60px] object-cover"
+                  style={{ height: "clamp(130px, 16vw, 230px)" }}
+                  loading="lazy"
+                />
+              )}
               {hasVideo ? (
                 <video
                   src={project.videoUrl}
-                  poster={project.posterUrl || project.imgs[1]}
+                  poster={project.posterUrl || project.imgs[1] || undefined}
                   aria-label={`${project.name} demo video`}
                   className="w-full rounded-[40px] sm:rounded-[50px] md:rounded-[60px] object-cover"
                   style={{ height: "clamp(160px, 22vw, 340px)" }}
@@ -129,23 +131,27 @@ function ProjectCard({
                   preload="metadata"
                 />
               ) : (
-                <img
-                  src={project.imgs[1]}
-                  alt={`${project.name} — preview 2`}
-                  className="w-full rounded-[40px] sm:rounded-[50px] md:rounded-[60px] object-cover"
-                  style={{ height: "clamp(160px, 22vw, 340px)" }}
-                  loading="lazy"
-                />
+                project.imgs[1] && (
+                  <img
+                    src={project.imgs[1]}
+                    alt={`${project.name} — preview 2`}
+                    className="w-full rounded-[40px] sm:rounded-[50px] md:rounded-[60px] object-cover"
+                    style={{ height: "clamp(160px, 22vw, 340px)" }}
+                    loading="lazy"
+                  />
+                )
               )}
             </div>
             <div className="sm:col-span-3">
-              <img
-                src={project.imgs[2]}
-                alt={`${project.name} — feature screenshot`}
-                className="w-full h-full rounded-[40px] sm:rounded-[50px] md:rounded-[60px] object-cover"
-                style={{ minHeight: "clamp(310px, 40vw, 590px)" }}
-                loading="lazy"
-              />
+              {project.imgs[2] && (
+                <img
+                  src={project.imgs[2]}
+                  alt={`${project.name} — feature screenshot`}
+                  className="w-full h-full rounded-[40px] sm:rounded-[50px] md:rounded-[60px] object-cover"
+                  style={{ minHeight: "clamp(310px, 40vw, 590px)" }}
+                  loading="lazy"
+                />
+              )}
             </div>
           </div>
         </div>
