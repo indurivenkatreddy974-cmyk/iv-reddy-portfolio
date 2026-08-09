@@ -39,7 +39,6 @@ function ProjectCard({
       <motion.div
         style={{ scale }}
         className="w-full rounded-[40px] sm:rounded-[50px] md:rounded-[60px] p-4 sm:p-6 md:p-8"
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         {...({
           initial: { opacity: 0, y: 60 },
           whileInView: { opacity: 1, y: 0 },

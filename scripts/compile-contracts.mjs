@@ -4,10 +4,7 @@ import path from "node:path";
 
 const ROOT = "/dev-server";
 function findImport(p) {
-  const candidates = [
-    path.join(ROOT, "node_modules", p),
-    path.join(ROOT, "contracts", p),
-  ];
+  const candidates = [path.join(ROOT, "node_modules", p), path.join(ROOT, "contracts", p)];
   for (const c of candidates) {
     if (fs.existsSync(c)) return { contents: fs.readFileSync(c, "utf8") };
   }
@@ -31,8 +28,11 @@ const input = {
 
 const out = JSON.parse(solc.compile(JSON.stringify(input), { import: findImport }));
 const errs = (out.errors || []).filter((e) => e.severity === "error");
-if (errs.length) { console.error(errs.map((e) => e.formattedMessage).join("\n")); process.exit(1); }
-for (const w of (out.errors || [])) console.log("[warn]", w.formattedMessage?.split("\n")[0]);
+if (errs.length) {
+  console.error(errs.map((e) => e.formattedMessage).join("\n"));
+  process.exit(1);
+}
+for (const w of out.errors || []) console.log("[warn]", w.formattedMessage?.split("\n")[0]);
 
 const pick = (file, name) => {
   const c = out.contracts[file][name];

@@ -75,7 +75,10 @@ function TokenCard({ token }: { token: ReturnType<typeof useVerification>["token
     >
       <div
         className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-3xl"
-        style={{ boxShadow: "inset 0 0 0 1px rgba(118,33,176,0.45), 0 25px 60px -20px rgba(118,33,176,0.4)" }}
+        style={{
+          boxShadow:
+            "inset 0 0 0 1px rgba(118,33,176,0.45), 0 25px 60px -20px rgba(118,33,176,0.4)",
+        }}
         aria-hidden="true"
       />
 
@@ -102,7 +105,11 @@ function TokenCard({ token }: { token: ReturnType<typeof useVerification>["token
         )}
         <div
           className="absolute top-3 left-3 text-[10px] uppercase tracking-widest text-white px-2.5 py-1 rounded-full"
-          style={{ background: "rgba(0,0,0,0.55)", backdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,0.12)" }}
+          style={{
+            background: "rgba(0,0,0,0.55)",
+            backdropFilter: "blur(8px)",
+            border: "1px solid rgba(255,255,255,0.12)",
+          }}
         >
           {info.label}
         </div>
@@ -113,7 +120,9 @@ function TokenCard({ token }: { token: ReturnType<typeof useVerification>["token
           {token.project_name}
         </h3>
         {token.description && (
-          <p className="text-sm text-[#D7E2EA]/60 font-light leading-relaxed line-clamp-3">{token.description}</p>
+          <p className="text-sm text-[#D7E2EA]/60 font-light leading-relaxed line-clamp-3">
+            {token.description}
+          </p>
         )}
 
         <dl className="mt-1 grid grid-cols-2 gap-x-4 gap-y-2 text-[11px]">

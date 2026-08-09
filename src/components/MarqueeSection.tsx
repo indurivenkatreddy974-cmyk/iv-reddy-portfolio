@@ -57,7 +57,10 @@ export function MarqueeSection() {
       style={{ background: "#0C0C0C" }}
     >
       <div className="flex flex-col gap-3">
-        <div className="flex gap-3" style={{ transform: `translateX(${t1}px)`, willChange: "transform" }}>
+        <div
+          className="flex gap-3"
+          style={{ transform: `translateX(${t1}px)`, willChange: "transform" }}
+        >
           {row1.map((src, i) => (
             <img
               key={`r1-${i}`}
@@ -69,7 +72,10 @@ export function MarqueeSection() {
             />
           ))}
         </div>
-        <div className="flex gap-3" style={{ transform: `translateX(${t2}px)`, willChange: "transform" }}>
+        <div
+          className="flex gap-3"
+          style={{ transform: `translateX(${t2}px)`, willChange: "transform" }}
+        >
           {row2.map((src, i) => (
             <img
               key={`r2-${i}`}

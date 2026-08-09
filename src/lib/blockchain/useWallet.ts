@@ -63,7 +63,9 @@ export function useWallet(): WalletState {
     setConnecting(true);
     setError(null);
     try {
-      const accounts = (await wallet.provider.request({ method: "eth_requestAccounts" })) as string[];
+      const accounts = (await wallet.provider.request({
+        method: "eth_requestAccounts",
+      })) as string[];
       const hexChain = (await wallet.provider.request({ method: "eth_chainId" })) as string;
       setAddress(accounts?.[0] ?? null);
       setChainId(hexChain ? Number.parseInt(hexChain, 16) : null);

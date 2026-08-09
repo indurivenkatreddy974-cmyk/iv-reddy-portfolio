@@ -675,7 +675,6 @@ export function BlockchainManager() {
           }
         />
       </Panel>
-
     </div>
   );
 }

@@ -4,7 +4,13 @@ import { Link } from "@tanstack/react-router";
 import { ShieldCheck, ArrowLeft, FileJson } from "lucide-react";
 import { getVerificationState } from "@/lib/blockchain.functions";
 import type { PublicRecord } from "@/lib/blockchain/chains";
-import { chainInfo, formatVerifiedDate, shortHash, SUBJECT_LABELS, txUrl } from "@/lib/blockchain/chains";
+import {
+  chainInfo,
+  formatVerifiedDate,
+  shortHash,
+  SUBJECT_LABELS,
+  txUrl,
+} from "@/lib/blockchain/chains";
 import {
   buildVerificationPageGraph,
   credentialUrl,
@@ -22,7 +28,6 @@ async function loadRecords(): Promise<{ records: PublicRecord[] }> {
     return { records: [] as PublicRecord[] };
   }
 }
-
 
 const TITLE = "Blockchain Verified Credentials — IV Reddy";
 const DESCRIPTION =
@@ -46,7 +51,9 @@ export const Route = createFileRoute("/verify")({
     scripts: [
       {
         type: "application/ld+json",
-        children: JSON.stringify(buildVerificationPageGraph(loaderData?.records ?? [], SITE_ORIGIN)),
+        children: JSON.stringify(
+          buildVerificationPageGraph(loaderData?.records ?? [], SITE_ORIGIN),
+        ),
       },
     ],
   }),
@@ -59,7 +66,10 @@ function VerifyPage() {
   const confirmed = records.filter((r) => r.status === "confirmed");
 
   return (
-    <main className="min-h-screen px-5 sm:px-8 md:px-10 py-16 sm:py-24" style={{ background: "#0C0C0C" }}>
+    <main
+      className="min-h-screen px-5 sm:px-8 md:px-10 py-16 sm:py-24"
+      style={{ background: "#0C0C0C" }}
+    >
       <div className="max-w-5xl mx-auto">
         <div className="flex flex-wrap items-center justify-between gap-4 mb-10">
           <Link
@@ -77,7 +87,9 @@ function VerifyPage() {
         >
           Verified Credentials
         </h1>
-        <p className="text-[#D7E2EA]/70 font-light leading-relaxed max-w-2xl mb-14">{DESCRIPTION}</p>
+        <p className="text-[#D7E2EA]/70 font-light leading-relaxed max-w-2xl mb-14">
+          {DESCRIPTION}
+        </p>
 
         {confirmed.length === 0 ? (
           <p className="text-[#D7E2EA]/50 font-light">

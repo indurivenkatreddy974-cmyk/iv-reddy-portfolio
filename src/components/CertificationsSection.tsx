@@ -28,7 +28,11 @@ export function CertificationsSection() {
   if (!items || items.length === 0) return null;
 
   return (
-    <section id="certifications" className="px-5 sm:px-8 md:px-10 py-24 sm:py-32 relative" style={{ background: "#0C0C0C" }}>
+    <section
+      id="certifications"
+      className="px-5 sm:px-8 md:px-10 py-24 sm:py-32 relative"
+      style={{ background: "#0C0C0C" }}
+    >
       <FadeIn delay={0} y={40} className="text-center mb-6">
         <h2
           className="hero-heading font-black uppercase leading-none tracking-tight"
@@ -39,8 +43,12 @@ export function CertificationsSection() {
       </FadeIn>
 
       <FadeIn delay={0.15} y={20} className="text-center max-w-2xl mx-auto mb-16 md:mb-20">
-        <p className="text-[#D7E2EA]/70 font-light leading-relaxed" style={{ fontSize: "clamp(0.95rem, 1.4vw, 1.15rem)" }}>
-          Verified credentials from globally recognised programs, platforms, and industry training initiatives.
+        <p
+          className="text-[#D7E2EA]/70 font-light leading-relaxed"
+          style={{ fontSize: "clamp(0.95rem, 1.4vw, 1.15rem)" }}
+        >
+          Verified credentials from globally recognised programs, platforms, and industry training
+          initiatives.
         </p>
       </FadeIn>
 
@@ -106,13 +114,16 @@ function CertCard({
         border: "1px solid rgba(215,226,234,0.1)",
         backdropFilter: "blur(20px)",
       }}
-      onClick={() => documentUrl && canPreviewDocument && onPreview(documentUrl, `${cert.name} — ${cert.issuer}`)}
+      onClick={() =>
+        documentUrl && canPreviewDocument && onPreview(documentUrl, `${cert.name} — ${cert.issuer}`)
+      }
     >
       {/* Glow border on hover */}
       <div
         className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-3xl"
         style={{
-          boxShadow: "inset 0 0 0 1px rgba(74,158,255,0.45), 0 25px 60px -20px rgba(74,158,255,0.45)",
+          boxShadow:
+            "inset 0 0 0 1px rgba(74,158,255,0.45), 0 25px 60px -20px rgba(74,158,255,0.45)",
         }}
       />
 
@@ -159,7 +170,11 @@ function CertCard({
         {documentKind === "pdf" && pageCount && (
           <div
             className="absolute top-3 left-3 text-[10px] uppercase tracking-widest text-white px-2.5 py-1 rounded-full"
-            style={{ background: "rgba(0,0,0,0.55)", backdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,0.12)" }}
+            style={{
+              background: "rgba(0,0,0,0.55)",
+              backdropFilter: "blur(8px)",
+              border: "1px solid rgba(255,255,255,0.12)",
+            }}
           >
             Page 1 of {pageCount}
           </div>
@@ -169,17 +184,21 @@ function CertCard({
           className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center pointer-events-none"
           style={{ background: "linear-gradient(180deg, transparent, rgba(0,0,0,0.7))" }}
         >
-          <div className="flex items-center gap-2 text-xs uppercase tracking-widest text-white px-4 py-2 rounded-full" style={{ background: "rgba(74,158,255,0.25)", backdropFilter: "blur(10px)" }}>
+          <div
+            className="flex items-center gap-2 text-xs uppercase tracking-widest text-white px-4 py-2 rounded-full"
+            style={{ background: "rgba(74,158,255,0.25)", backdropFilter: "blur(10px)" }}
+          >
             <Eye className="w-3.5 h-3.5" /> Preview
           </div>
         </div>
       </div>
 
-
       <div className="p-6 flex flex-col gap-3 flex-1">
         <div className="flex items-center gap-2">
           <Award className="w-4 h-4 text-[#4a9eff]" />
-          <span className="text-[10px] uppercase tracking-[0.3em] text-[#4a9eff]">{cert.issuer}</span>
+          <span className="text-[10px] uppercase tracking-[0.3em] text-[#4a9eff]">
+            {cert.issuer}
+          </span>
         </div>
         <h3 className="font-medium uppercase tracking-wide text-[#D7E2EA] text-lg leading-tight">
           {cert.name}
@@ -206,7 +225,9 @@ function CertCard({
           )}
           {documentUrl && (
             <button
-              onClick={() => void triggerDocumentDownload(documentUrl, `${cert.name} ${cert.issuer}`)}
+              onClick={() =>
+                void triggerDocumentDownload(documentUrl, `${cert.name} ${cert.issuer}`)
+              }
               className="flex items-center justify-center gap-2 text-[11px] uppercase tracking-widest px-4 py-2.5 rounded-full border border-[#D7E2EA]/20 text-[#D7E2EA]/85 hover:text-white hover:border-[#4a9eff]/50 transition"
               title="Download"
             >

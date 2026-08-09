@@ -5,7 +5,11 @@ import { useContent } from "@/lib/content-store";
 export function TimelineSection() {
   const items = useContent((s) => s.timeline);
   return (
-    <section id="timeline" className="px-5 sm:px-8 md:px-10 py-24 sm:py-32" style={{ background: "#0C0C0C" }}>
+    <section
+      id="timeline"
+      className="px-5 sm:px-8 md:px-10 py-24 sm:py-32"
+      style={{ background: "#0C0C0C" }}
+    >
       <FadeIn delay={0} y={40} className="text-center mb-16 md:mb-24">
         <h2
           className="hero-heading font-black uppercase leading-none tracking-tight"
@@ -16,7 +20,10 @@ export function TimelineSection() {
       </FadeIn>
 
       <div className="relative max-w-4xl mx-auto">
-        <div className="absolute left-4 sm:left-1/2 top-0 bottom-0 w-[2px] timeline-line sm:-translate-x-1/2" aria-hidden />
+        <div
+          className="absolute left-4 sm:left-1/2 top-0 bottom-0 w-[2px] timeline-line sm:-translate-x-1/2"
+          aria-hidden
+        />
 
         <div className="flex flex-col gap-10 md:gap-14">
           {items.map((item, i) => (
@@ -38,7 +45,10 @@ export function TimelineSection() {
               <div className="hidden sm:block sm:w-1/2" />
               <div className="pl-12 sm:pl-0 sm:w-1/2 sm:px-8">
                 <div className="tech-card rounded-2xl p-5 md:p-7">
-                  <span className="text-[10px] tracking-[0.4em] uppercase block mb-2" style={{ color: "#4a9eff" }}>
+                  <span
+                    className="text-[10px] tracking-[0.4em] uppercase block mb-2"
+                    style={{ color: "#4a9eff" }}
+                  >
                     Stage {String(i + 1).padStart(2, "0")}
                   </span>
                   <h3 className="font-medium uppercase text-[#D7E2EA] text-xl md:text-2xl mb-2 tracking-tight">

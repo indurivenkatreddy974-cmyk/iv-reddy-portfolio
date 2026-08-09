@@ -114,7 +114,10 @@ export function VerificationDialog({
       const matches = hash.toLowerCase() === record.sha256.toLowerCase() && onChain.authentic;
       setCheck({ phase: matches ? "authentic" : "modified", hash });
     } catch (err) {
-      setCheck({ phase: "error", message: err instanceof Error ? err.message : "Verification failed." });
+      setCheck({
+        phase: "error",
+        message: err instanceof Error ? err.message : "Verification failed.",
+      });
     }
   }, [record]);
 
@@ -152,7 +155,10 @@ export function VerificationDialog({
                   <ShieldCheck className="w-3.5 h-3.5" aria-hidden="true" />
                   Blockchain Verified
                 </div>
-                <h2 id={titleId} className="mt-2 text-lg sm:text-xl font-medium text-[#D7E2EA] leading-snug break-words">
+                <h2
+                  id={titleId}
+                  className="mt-2 text-lg sm:text-xl font-medium text-[#D7E2EA] leading-snug break-words"
+                >
                   {record.title}
                 </h2>
                 <p className="mt-1 text-xs uppercase tracking-[0.2em] text-[#D7E2EA]/45">
@@ -189,12 +195,22 @@ export function VerificationDialog({
                 />
               )}
               {record.wallet_address && (
-                <Row label="Wallet" value={shortHash(record.wallet_address, 10, 6)} full={record.wallet_address} />
+                <Row
+                  label="Wallet"
+                  value={shortHash(record.wallet_address, 10, 6)}
+                  full={record.wallet_address}
+                />
               )}
               {record.tx_hash && (
-                <Row label="Transaction" value={shortHash(record.tx_hash, 10, 8)} full={record.tx_hash} />
+                <Row
+                  label="Transaction"
+                  value={shortHash(record.tx_hash, 10, 8)}
+                  full={record.tx_hash}
+                />
               )}
-              {record.block_number != null && <Row label="Block" value={`#${record.block_number}`} />}
+              {record.block_number != null && (
+                <Row label="Block" value={`#${record.block_number}`} />
+              )}
               <Row label="Verified" value={formatVerifiedDate(record.registered_at)} />
             </dl>
 
@@ -215,18 +231,25 @@ export function VerificationDialog({
               {check.phase === "modified" || check.phase === "error" ? (
                 <ShieldAlert className="w-4 h-4 mt-0.5 text-red-300 shrink-0" aria-hidden="true" />
               ) : (
-                <ShieldCheck className="w-4 h-4 mt-0.5 text-emerald-300 shrink-0" aria-hidden="true" />
+                <ShieldCheck
+                  className="w-4 h-4 mt-0.5 text-emerald-300 shrink-0"
+                  aria-hidden="true"
+                />
               )}
               <div className="min-w-0">
                 {check.phase === "idle" && (
                   <span className="text-[#D7E2EA]/70">
-                    This fingerprint is anchored on {chainInfo(record.chain_id).label}. Run a live check to
-                    re-download the file and compare its hash against the chain.
+                    This fingerprint is anchored on {chainInfo(record.chain_id).label}. Run a live
+                    check to re-download the file and compare its hash against the chain.
                   </span>
                 )}
-                {check.phase === "running" && <span className="text-[#D7E2EA]/70">Re-hashing the document…</span>}
+                {check.phase === "running" && (
+                  <span className="text-[#D7E2EA]/70">Re-hashing the document…</span>
+                )}
                 {check.phase === "authentic" && (
-                  <span className="text-emerald-200">Authentic document — hash matches the on-chain record.</span>
+                  <span className="text-emerald-200">
+                    Authentic document — hash matches the on-chain record.
+                  </span>
                 )}
                 {check.phase === "modified" && (
                   <span className="text-red-200">
@@ -313,7 +336,9 @@ function Row({
   if (!value) return null;
   return (
     <div className="flex items-center justify-between gap-4 border-b border-[#D7E2EA]/8 pb-2.5">
-      <dt className="text-[10px] uppercase tracking-[0.25em] text-[#D7E2EA]/45 shrink-0">{label}</dt>
+      <dt className="text-[10px] uppercase tracking-[0.25em] text-[#D7E2EA]/45 shrink-0">
+        {label}
+      </dt>
       <dd className="flex items-center gap-2 min-w-0">
         <span className="font-mono text-xs text-[#D7E2EA]/85 truncate" title={full ?? value}>
           {value}
@@ -325,7 +350,11 @@ function Row({
             aria-label={`Copy ${label}`}
             className="shrink-0 text-[#D7E2EA]/50 hover:text-[#4a9eff] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4a9eff] rounded"
           >
-            {copied ? <Check className="w-3.5 h-3.5" aria-hidden="true" /> : <Copy className="w-3.5 h-3.5" aria-hidden="true" />}
+            {copied ? (
+              <Check className="w-3.5 h-3.5" aria-hidden="true" />
+            ) : (
+              <Copy className="w-3.5 h-3.5" aria-hidden="true" />
+            )}
           </button>
         )}
       </dd>

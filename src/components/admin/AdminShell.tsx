@@ -704,14 +704,31 @@ function InternshipsEditor() {
                     </button>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <Field label="Company / Organization" value={i.company} onChange={(v) => update(i.id, { company: v })} />
-                    <Field label="Role" value={i.role} onChange={(v) => update(i.id, { role: v })} />
-                    <Field label="Duration" value={i.duration} onChange={(v) => update(i.id, { duration: v })} />
-                    <Field label="Logo URL" value={i.logoUrl ?? ""} onChange={(v) => update(i.id, { logoUrl: v })} />
+                    <Field
+                      label="Company / Organization"
+                      value={i.company}
+                      onChange={(v) => update(i.id, { company: v })}
+                    />
+                    <Field
+                      label="Role"
+                      value={i.role}
+                      onChange={(v) => update(i.id, { role: v })}
+                    />
+                    <Field
+                      label="Duration"
+                      value={i.duration}
+                      onChange={(v) => update(i.id, { duration: v })}
+                    />
+                    <Field
+                      label="Logo URL"
+                      value={i.logoUrl ?? ""}
+                      onChange={(v) => update(i.id, { logoUrl: v })}
+                    />
                   </div>
                   <div className="mt-3 flex flex-col gap-3">
                     <div className="text-[10px] uppercase tracking-[0.25em] text-[#D7E2EA]/40">
-                      Use uploaded document paths like /api/public/m/portfolio/your-file.pdf for best preview and download speed.
+                      Use uploaded document paths like /api/public/m/portfolio/your-file.pdf for
+                      best preview and download speed.
                     </div>
                     <Field
                       label="Description"
@@ -724,7 +741,10 @@ function InternshipsEditor() {
                       value={(i.skills ?? []).join(", ")}
                       onChange={(v) =>
                         update(i.id, {
-                          skills: v.split(",").map((s) => s.trim()).filter(Boolean),
+                          skills: v
+                            .split(",")
+                            .map((s) => s.trim())
+                            .filter(Boolean),
                         })
                       }
                     />
@@ -768,7 +788,14 @@ function EducationEditor() {
   const add = () =>
     setKey("educations", [
       ...items,
-      { id: newId(), degree: "Degree", institution: "Institution", year: "Year", percentage: "", description: "" },
+      {
+        id: newId(),
+        degree: "Degree",
+        institution: "Institution",
+        year: "Year",
+        percentage: "",
+        description: "",
+      },
     ]);
   return (
     <>
@@ -884,7 +911,8 @@ function CertificationsEditor() {
         <div>
           <div className="text-xs uppercase tracking-[0.3em] text-[#D7E2EA]/60">Certifications</div>
           <div className="text-[10px] text-[#D7E2EA]/40 mt-1">
-            Paste a public PDF URL or use a /api/public/m/... path uploaded via Showcase → Media Library.
+            Paste a public PDF URL or use a /api/public/m/... path uploaded via Showcase → Media
+            Library.
           </div>
         </div>
         <button
@@ -908,28 +936,59 @@ function CertificationsEditor() {
                   }}
                 >
                   <div className="flex items-center gap-3 mb-4">
-                    <button {...listeners} className="cursor-grab text-[#D7E2EA]/40 hover:text-[#D7E2EA]">
+                    <button
+                      {...listeners}
+                      className="cursor-grab text-[#D7E2EA]/40 hover:text-[#D7E2EA]"
+                    >
                       <GripVertical className="w-4 h-4" />
                     </button>
                     <div className="flex-1 text-xs uppercase tracking-[0.3em] text-[#D7E2EA]/60">
                       {i.name}
                     </div>
-                    <button onClick={() => remove(i.id)} className="text-[#D7E2EA]/40 hover:text-red-400">
+                    <button
+                      onClick={() => remove(i.id)}
+                      className="text-[#D7E2EA]/40 hover:text-red-400"
+                    >
                       <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <Field label="Certificate Name" value={i.name} onChange={(v) => update(i.id, { name: v })} />
-                    <Field label="Issuing Organization" value={i.issuer} onChange={(v) => update(i.id, { issuer: v })} />
-                    <Field label="Issue Date" value={i.issueDate} onChange={(v) => update(i.id, { issueDate: v })} />
-                    <Field label="Verification Link (optional)" value={i.verifyUrl ?? ""} onChange={(v) => update(i.id, { verifyUrl: v })} />
+                    <Field
+                      label="Certificate Name"
+                      value={i.name}
+                      onChange={(v) => update(i.id, { name: v })}
+                    />
+                    <Field
+                      label="Issuing Organization"
+                      value={i.issuer}
+                      onChange={(v) => update(i.id, { issuer: v })}
+                    />
+                    <Field
+                      label="Issue Date"
+                      value={i.issueDate}
+                      onChange={(v) => update(i.id, { issueDate: v })}
+                    />
+                    <Field
+                      label="Verification Link (optional)"
+                      value={i.verifyUrl ?? ""}
+                      onChange={(v) => update(i.id, { verifyUrl: v })}
+                    />
                   </div>
                   <div className="mt-3 flex flex-col gap-3">
                     <div className="text-[10px] uppercase tracking-[0.25em] text-[#D7E2EA]/40">
-                      Add a direct PDF or image document URL. Leave verification link empty unless it opens the real issuer page.
+                      Add a direct PDF or image document URL. Leave verification link empty unless
+                      it opens the real issuer page.
                     </div>
-                    <Field label="Certificate File URL" value={i.pdfUrl} onChange={(v) => update(i.id, { pdfUrl: v })} />
-                    <Field label="Preview Image URL (optional)" value={i.previewUrl ?? ""} onChange={(v) => update(i.id, { previewUrl: v })} />
+                    <Field
+                      label="Certificate File URL"
+                      value={i.pdfUrl}
+                      onChange={(v) => update(i.id, { pdfUrl: v })}
+                    />
+                    <Field
+                      label="Preview Image URL (optional)"
+                      value={i.previewUrl ?? ""}
+                      onChange={(v) => update(i.id, { previewUrl: v })}
+                    />
                   </div>
                 </div>
               )}
@@ -940,7 +999,6 @@ function CertificationsEditor() {
     </>
   );
 }
-
 
 function TimelineEditor() {
   const items = useContent((s) => s.timeline);

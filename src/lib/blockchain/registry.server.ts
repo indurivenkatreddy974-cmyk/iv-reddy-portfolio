@@ -74,7 +74,9 @@ function base64ToBytes(b64: string): Uint8Array {
   return out;
 }
 
-async function loadBytes(payload: RegisterDocumentPayload): Promise<{ bytes: Uint8Array; mime: string; name: string }> {
+async function loadBytes(
+  payload: RegisterDocumentPayload,
+): Promise<{ bytes: Uint8Array; mime: string; name: string }> {
   const fallbackName = payload.file_name || `${payload.subject_type}-${Date.now()}`;
   if (payload.file_base64) {
     const bytes = base64ToBytes(payload.file_base64);
@@ -87,13 +89,20 @@ async function loadBytes(payload: RegisterDocumentPayload): Promise<{ bytes: Uin
 
   // App-hosted media -> read straight out of storage (no network round-trip).
   if (src.startsWith(MEDIA_PREFIX) || src.includes(MEDIA_PREFIX)) {
-    const path = decodeURIComponent(src.slice(src.indexOf(MEDIA_PREFIX) + MEDIA_PREFIX.length).split("?")[0]!);
+    const path = decodeURIComponent(
+      src.slice(src.indexOf(MEDIA_PREFIX) + MEDIA_PREFIX.length).split("?")[0]!,
+    );
     const db = await admin();
     const { data, error } = await db.storage.from(STORAGE_BUCKET).download(path);
-    if (error || !data) throw new Error(`Could not read stored file: ${error?.message ?? "not found"}`);
+    if (error || !data)
+      throw new Error(`Could not read stored file: ${error?.message ?? "not found"}`);
     const buf = new Uint8Array(await data.arrayBuffer());
     if (buf.byteLength > MAX_BYTES) throw new Error("File exceeds the 25 MB verification limit.");
-    return { bytes: buf, mime: data.type || payload.mime || "application/octet-stream", name: path.split("/").pop() || fallbackName };
+    return {
+      bytes: buf,
+      mime: data.type || payload.mime || "application/octet-stream",
+      name: path.split("/").pop() || fallbackName,
+    };
   }
 
   let url: URL;
@@ -146,7 +155,8 @@ export async function deployContracts() {
       args: [account.address],
     });
     const receipt = await publicClient.waitForTransactionReceipt({ hash });
-    if (!receipt.contractAddress) throw new Error("Verification contract deployment produced no address.");
+    if (!receipt.contractAddress)
+      throw new Error("Verification contract deployment produced no address.");
     verification = receipt.contractAddress;
   }
 
@@ -157,7 +167,8 @@ export async function deployContracts() {
       args: ["Portfolio Digital Ownership", "PDO", account.address],
     });
     const receipt = await publicClient.waitForTransactionReceipt({ hash });
-    if (!receipt.contractAddress) throw new Error("Ownership contract deployment produced no address.");
+    if (!receipt.contractAddress)
+      throw new Error("Ownership contract deployment produced no address.");
     nft = receipt.contractAddress;
   }
 
@@ -175,7 +186,13 @@ export async function deployContracts() {
     .eq("id", 1);
   if (error) throw new Error(error.message);
 
-  return { verification_contract: verification, nft_contract: nft, wallet_address: account.address, chain_id: chainId, network: info.network };
+  return {
+    verification_contract: verification,
+    nft_contract: nft,
+    wallet_address: account.address,
+    chain_id: chainId,
+    network: info.network,
+  };
 }
 
 // ------------------------------------------------------------ registration
@@ -185,7 +202,9 @@ export async function registerDocument(payload: RegisterDocumentPayload) {
   const db = await admin();
   const settings = await currentSettings();
   if (!settings?.verification_contract) {
-    throw new Error("Verification contract is not deployed yet. Deploy it from the Blockchain tab first.");
+    throw new Error(
+      "Verification contract is not deployed yet. Deploy it from the Blockchain tab first.",
+    );
   }
 
   const { bytes, mime, name } = await loadBytes(payload);
@@ -197,7 +216,12 @@ export async function registerDocument(payload: RegisterDocumentPayload) {
     .eq("sha256", digest)
     .maybeSingle();
   if (dupe) {
-    return { duplicate: true as const, id: dupe.id, sha256: digest, message: `Already anchored as "${dupe.title}".` };
+    return {
+      duplicate: true as const,
+      id: dupe.id,
+      sha256: digest,
+      message: `Already anchored as "${dupe.title}".`,
+    };
   }
 
   const { cid } = await pinFile(bytes, name, mime);
@@ -283,7 +307,13 @@ export async function verifyDigest(digest: string) {
     .maybeSingle();
 
   const settings = await currentSettings();
-  let onChain: { authentic: boolean; timestamp: string | null; version: number | null; issuer: string | null; ipfs_cid: string | null } = {
+  let onChain: {
+    authentic: boolean;
+    timestamp: string | null;
+    version: number | null;
+    issuer: string | null;
+    ipfs_cid: string | null;
+  } = {
     authentic: false,
     timestamp: null,
     version: null,
@@ -299,7 +329,10 @@ export async function verifyDigest(digest: string) {
         abi: VERIFICATION_ABI,
         functionName: "verify",
         args: [`0x${lower}` as Hex],
-      })) as readonly [boolean, { timestamp: bigint; version: number; issuer: string; ipfsCid: string }];
+      })) as readonly [
+        boolean,
+        { timestamp: bigint; version: number; issuer: string; ipfsCid: string },
+      ];
       const [authentic, rec] = result;
       onChain = {
         authentic,
@@ -318,7 +351,9 @@ export async function verifyDigest(digest: string) {
     authentic: onChain.authentic || record?.status === "confirmed",
     on_chain: onChain,
     record: record ?? null,
-    explorer: record?.tx_hash ? `${chainInfo(record.chain_id).explorer}/tx/${record.tx_hash}` : null,
+    explorer: record?.tx_hash
+      ? `${chainInfo(record.chain_id).explorer}/tx/${record.tx_hash}`
+      : null,
   };
 }
 
@@ -328,7 +363,9 @@ export async function mintProjectToken(payload: MintTokenPayload) {
   const db = await admin();
   const settings = await currentSettings();
   if (!settings?.nft_contract) {
-    throw new Error("Ownership contract is not deployed yet. Deploy it from the Blockchain tab first.");
+    throw new Error(
+      "Ownership contract is not deployed yet. Deploy it from the Blockchain tab first.",
+    );
   }
 
   const { data: existing } = await db
@@ -412,10 +449,19 @@ export async function mintProjectToken(payload: MintTokenPayload) {
       })
       .eq("id", rowId);
 
-    return { duplicate: false as const, id: rowId, token_id: tokenId.toString(), tx_hash: hash, chain_id: chainId };
+    return {
+      duplicate: false as const,
+      id: rowId,
+      token_id: tokenId.toString(),
+      tx_hash: hash,
+      chain_id: chainId,
+    };
   } catch (err) {
     const message = err instanceof Error ? err.message : "Mint failed";
-    await db.from("nft_tokens").update({ status: "failed", error_message: message.slice(0, 500) }).eq("id", rowId);
+    await db
+      .from("nft_tokens")
+      .update({ status: "failed", error_message: message.slice(0, 500) })
+      .eq("id", rowId);
     throw new Error(message);
   }
 }
@@ -450,7 +496,8 @@ export function submissionKey(input: string) {
  */
 export async function autoAnchor(payload: RegisterDocumentPayload) {
   const settings = await currentSettings();
-  if (!settings?.enabled) return { anchored: false as const, reason: "Blockchain layer is disabled." };
+  if (!settings?.enabled)
+    return { anchored: false as const, reason: "Blockchain layer is disabled." };
   if (!settings.verification_contract) {
     return { anchored: false as const, reason: "Verification contract is not deployed yet." };
   }
