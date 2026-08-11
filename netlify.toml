@@ -1,6 +1,23 @@
+# NOTE ON HOSTING
+#
+# This project is a TanStack Start (Nitro) full-stack app. `bun run build`
+# emits BOTH a client bundle (`dist/client`) and a server worker
+# (`dist/server`, Cloudflare Workers preset). Publishing `dist` as a static
+# site would break every server-side feature: admin auth, the signed media
+# proxy (`/api/public/m/*`), blockchain server functions, and the public
+# credential APIs.
+#
+# Production hosting for this app is Lovable (Cloudflare Workers runtime),
+# which consumes `dist/server` directly. This file is kept only so a Netlify
+# deploy of the STATIC client cannot silently masquerade as a working
+# deployment: to host on Netlify instead, the build must be switched to the
+# Netlify Nitro preset (`NITRO_PRESET=netlify`), which emits
+# `dist/public` + `.netlify/functions-internal` — the settings below reflect
+# that configuration.
+
 [build]
-  command = "bun run build"
-  publish = "dist"
+  command = "NITRO_PRESET=netlify bun run build"
+  publish = "dist/public"
 
 [build.environment]
   NODE_VERSION = "22"

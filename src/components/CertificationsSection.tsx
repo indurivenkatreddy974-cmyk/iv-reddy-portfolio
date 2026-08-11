@@ -1,6 +1,8 @@
 "use client";
 import { lazy, Suspense, useState } from "react";
 import { motion } from "framer-motion";
+import { ClientOnly } from "@tanstack/react-router";
+
 import { FadeIn } from "./FadeIn";
 import { useContent, type Certification } from "@/lib/content-store";
 import { Award, Download, Eye, ExternalLink, FileText } from "lucide-react";
@@ -145,14 +147,16 @@ function CertCard({
           />
         ) : documentKind === "pdf" && documentUrl && !thumbFailed ? (
           <div className="absolute inset-0 overflow-hidden bg-white transition-transform duration-700 group-hover:scale-105">
-            <Suspense fallback={<div className="w-full h-full bg-white/5" />}>
-              <PdfThumbnail
-                url={documentUrl}
-                width={520}
-                onPages={setPageCount}
-                onError={() => setThumbFailed(true)}
-              />
-            </Suspense>
+            <ClientOnly fallback={<div className="w-full h-full bg-white/5" />}>
+              <Suspense fallback={<div className="w-full h-full bg-white/5" />}>
+                <PdfThumbnail
+                  url={documentUrl}
+                  width={520}
+                  onPages={setPageCount}
+                  onError={() => setThumbFailed(true)}
+                />
+              </Suspense>
+            </ClientOnly>
           </div>
         ) : (
           <div
