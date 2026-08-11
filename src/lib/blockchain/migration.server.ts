@@ -184,11 +184,13 @@ export async function migrateBatch(targets: MigrationTarget[]): Promise<BatchRes
   const results: BatchResult[] = [];
 
   for (const t of targets) {
-    const { data: existing } = await db
+    const { data: existingRows } = await db
       .from("blockchain_records")
       .select("id, status, tx_hash, retry_count")
       .eq("subject_ref", t.subject_ref)
-      .maybeSingle();
+      .order("created_at", { ascending: false })
+      .limit(1);
+    const existing = existingRows?.[0];
 
     if (existing?.status === "confirmed") {
       results.push({

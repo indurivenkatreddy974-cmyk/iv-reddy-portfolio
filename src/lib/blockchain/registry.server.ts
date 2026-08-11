@@ -20,6 +20,17 @@ const STORAGE_BUCKET = "showcase-media";
 const MEDIA_PREFIX = "/api/public/m/";
 const MAX_BYTES = 25 * 1024 * 1024;
 
+/**
+ * Domain-separated on-chain key.
+ * The same underlying PDF can legitimately be BOTH a certificate and an
+ * internship document. The contract keys records by hash and reverts on a
+ * repeat, so the on-chain key mixes the record domain into the content hash
+ * while `sha256` keeps the raw, independently reproducible file digest.
+ */
+export function proofHashFor(subjectType: string, subjectRef: string, digest: string): Hex {
+  return keccak256(toHex(`${subjectType}|${subjectRef}|${digest.toLowerCase()}`));
+}
+
 async function admin() {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   return supabaseAdmin;
@@ -209,12 +220,17 @@ export async function registerDocument(payload: RegisterDocumentPayload) {
 
   const { bytes, mime, name } = await loadBytes(payload);
   const digest = await sha256(bytes);
+  const subjectRef = payload.subject_ref || payload.title;
+  const proofHash = proofHashFor(payload.subject_type, subjectRef, digest);
 
-  const { data: dupe } = await db
+  // Domain-scoped duplicate check: identical content under a *different*
+  // record domain is a legitimate, separate proof.
+  const { data: dupeRows } = await db
     .from("blockchain_records")
     .select("id, title, tx_hash, status")
-    .eq("sha256", digest)
-    .maybeSingle();
+    .eq("proof_hash", proofHash)
+    .limit(1);
+  const dupe = dupeRows?.[0];
   if (dupe) {
     return {
       duplicate: true as const,
@@ -240,6 +256,8 @@ export async function registerDocument(payload: RegisterDocumentPayload) {
       mime,
       size_bytes: bytes.byteLength,
       sha256: digest,
+      proof_hash: proofHash,
+
       ipfs_cid: cid,
       ipfs_url: ipfsUrl(cid, gateway),
       fallback_url: payload.source_url || null,
@@ -260,7 +278,7 @@ export async function registerDocument(payload: RegisterDocumentPayload) {
       address: settings.verification_contract as Hex,
       abi: VERIFICATION_ABI,
       functionName: "registerDocument",
-      args: [`0x${digest}` as Hex, cid, payload.subject_type, payload.subject_ref || payload.title],
+      args: [proofHash, cid, payload.subject_type, subjectRef],
     });
     const hash = await walletClient.writeContract(request);
     const receipt = await publicClient.waitForTransactionReceipt({ hash });
@@ -300,11 +318,15 @@ export async function registerDocument(payload: RegisterDocumentPayload) {
 export async function verifyDigest(digest: string) {
   const db = await admin();
   const lower = digest.toLowerCase();
-  const { data: record } = await db
+  // A single file can back several domain-separated records; take the most
+  // recent confirmed proof for the on-chain check.
+  const { data: matches } = await db
     .from("blockchain_records")
     .select("*")
     .eq("sha256", lower)
-    .maybeSingle();
+    .order("registered_at", { ascending: false, nullsFirst: false })
+    .limit(1);
+  const record = matches?.[0] ?? null;
 
   const settings = await currentSettings();
   let onChain: {
@@ -321,6 +343,12 @@ export async function verifyDigest(digest: string) {
     ipfs_cid: null,
   };
 
+  const onChainKey =
+    (record?.proof_hash as Hex | null | undefined) ??
+    (record
+      ? proofHashFor(record.subject_type, record.subject_ref || record.title, lower)
+      : (`0x${lower}` as Hex));
+
   if (settings?.verification_contract) {
     try {
       const { publicClient } = await getClients();
@@ -328,7 +356,7 @@ export async function verifyDigest(digest: string) {
         address: settings.verification_contract as Hex,
         abi: VERIFICATION_ABI,
         functionName: "verify",
-        args: [`0x${lower}` as Hex],
+        args: [onChainKey],
       })) as readonly [
         boolean,
         { timestamp: bigint; version: number; issuer: string; ipfsCid: string },
