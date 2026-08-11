@@ -12,7 +12,14 @@ import { VerificationDialog } from "./blockchain/VerificationDialog";
 import { useVerification, verificationRef } from "@/lib/blockchain/useVerification";
 import type { PublicRecord } from "@/lib/blockchain/chains";
 
-const PdfThumbnail = lazy(() => import("./PdfThumbnail"));
+// pdf.js touches DOMMatrix at module scope, so the import itself must never
+// run during SSR — the factory resolves only in the browser.
+const PdfThumbnail = lazy(() =>
+  typeof window === "undefined"
+    ? new Promise<never>(() => {})
+    : import("./PdfThumbnail"),
+);
+
 import {
   getDocumentKind,
   normalizeExternalUrl,
