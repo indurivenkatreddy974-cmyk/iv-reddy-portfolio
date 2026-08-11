@@ -15,9 +15,7 @@ import type { PublicRecord } from "@/lib/blockchain/chains";
 // pdf.js touches DOMMatrix at module scope, so the import itself must never
 // run during SSR — the factory resolves only in the browser.
 const PdfThumbnail = lazy(() =>
-  typeof window === "undefined"
-    ? new Promise<never>(() => {})
-    : import("./PdfThumbnail"),
+  typeof window === "undefined" ? new Promise<never>(() => {}) : import("./PdfThumbnail"),
 );
 
 import {
